@@ -17,6 +17,7 @@ report problems with them to Polyend; open an issue here instead.
 - **Song Loop**: done, tested on a Tracker+.
 - **Loop Crossfade**: done, tested on a Tracker+.
 - **X FX (tempo multiplier)**: done, tested on a Tracker+.
+- **Performance Scenes**: done, tested on a Tracker+.
 - **Pads 16**: planned. The Pattern screen's pad preview for all 16 tracks, not only tracks 1-8.
 - More of the same kind will follow.
 
@@ -49,6 +50,32 @@ done. In the Song screen's pattern list (the Pattern column):
 - Performance mode stays on for the whole block, as it does for one pattern with Loop
   Performance.
 - Stop ends the loop. Nothing is saved in the project.
+
+### Performance Scenes
+
+A new Performance FX type, **Performance scene**. A column of that type turns its lower three
+pads into three **scenes**. A scene stores a position for every other column: its top pad
+(the effect off) or one of its three values. One pad press then switches all of them at once.
+
+- **Choosing the type:** as for any column: Rec, Left/Right to the column, Up/Down through the
+  types; "Performance scene" comes last. Its pads read **Off**, **Sc 1**, **Sc 2**, **Sc 3**.
+- **Setting up scenes:** press Rec, then a scene pad. The title shows **Edit scene n** and the
+  other columns jump to what that scene holds. Every pad you press now stores all the other
+  columns' positions in that scene. Another scene pad switches to that scene; Rec off (or the
+  scene column's Off pad) ends the set-up. If a scene is playing when you press Rec, that scene
+  is edited at once; with Off playing, press a scene pad first.
+- **Playing:** without Rec, a scene pad sets every other column to its stored position: effects
+  on with their Rec values, the others off. Off turns every other column off.
+- **Encoder while holding a scene pad:** every effect the scene turned on moves together, as a
+  held pad moves its own effect in CE; releasing puts them back. Holding Off moves every column
+  from its default, and releasing turns them off again. In Rec the encoder does nothing while a
+  scene pad is held.
+- **Saved** like the Performance columns: with Config's Performance presets on **Global** one
+  set of scenes for all projects, on **Per Project** each project's own. Scenes stay with the
+  column numbers when a column is moved or pasted. Several scene columns can each hold three
+  scenes; as with any type, one plays at a time. Scene columns don't follow MIDI CC.
+- The scenes are stored in the scene column's own values, so the project and config formats
+  stay as CE has them. CE shows a scene column as "none".
 
 ### X FX: tempo multiplier
 

@@ -72,9 +72,12 @@ enum
     mtPerfSynth3Macro5,
     mtPerfSynth3Macro6,
 #endif
+    mtPerfScene, // PNEM: Performance scenes (on the Plus 46, as on 1.2.0)
     //--- dodwac efekty powyzej /\ ---
     performanceFxesCount
 };
+
+extern const uint8_t performanceSceneFxId = mtPerfScene; // PNEM: Performance scenes
 
 cPerformEngine performance(performanceFxesCount, performanceDataSource, performanceDataSourceCount);
 
@@ -822,3 +825,16 @@ cPerformFx patternLengthPerfFx(mtPerfPatternLength,
 //##########  ########################################################################
 
 //##########  ########################################################################
+
+//########## PNEM: PERFORMANCE SCENE ##############################################################
+// The column's pads are Off and three scenes; cPerformEngine does the work (scenePadPressed ...).
+void sceneSet([[maybe_unused]] uint8_t track, [[maybe_unused]] int16_t value)
+{
+}
+void sceneClear([[maybe_unused]] uint8_t track)
+{
+}
+const char scenePerfLabels[4][5] = { "Off", "Sc 1", "Sc 2", "Sc 3" };
+const fxSetup sceneSetup = { 0, 3, &scenePerfLabels[0][0], 5, 0, 0, true };
+
+cPerformFx scenePerfFx(mtPerfScene, "Performance scene", sceneSet, sceneClear, &sceneSetup);

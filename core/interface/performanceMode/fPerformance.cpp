@@ -124,6 +124,7 @@ void cPerformanceMode::start(uint32_t options)
     moduleRefresh = 1;
     performanceEditState = 0;
     performance.setEditState(performanceEditState);
+    performance.sceneEditEnd(); // PNEM: Performance scenes
     refreshBlinkingTrack = 0;
     dontClearPerformanceMode = 0;
 
@@ -296,6 +297,10 @@ void cPerformanceMode::refreshAllCC()
 {
     for (uint8_t ccForSlot = 0; ccForSlot < 12; ccForSlot++)
     {
+        if (isCCToReceiveForSlot[ccForSlot] && performance.isSceneSlot(ccForSlot))
+        {
+            isCCToReceiveForSlot[ccForSlot] = false; // PNEM: Performance scenes ignore MIDI CC
+        }
         if (isCCToReceiveForSlot[ccForSlot])
         {
             performance.setSelectedRow(ccForSlot, 4);
@@ -600,6 +605,13 @@ static void functPlayAction()
 static void functRecAction()
 {
     PM->toggleEditState();
+
+    // PNEM: Performance scenes: with Rec the scene playing is edited
+    if (PM->performanceEditState)
+        performance.sceneEditBegin();
+    else
+        performance.sceneEditEnd();
+    PM->showSceneTitle();
 }
 
 static void functShift(uint8_t value)
@@ -850,6 +862,13 @@ static void functPads(uint8_t pad, uint8_t state, int16_t velo)
         performance.setSlotState(slot, 1);
 
         performance.loadSlotFxValues(slot);
+
+        // PNEM: Performance scenes: a scene pad sets the other columns; in Rec another pad
+        // stores them in the scene being edited
+        if (performance.isSceneSlot(slot))
+            performance.scenePadPressed(slot, pad / 12);
+        else
+            performance.otherPadPressed(slot);
     }
     else if (state == buttonRelease)
     {
@@ -858,6 +877,9 @@ static void functPads(uint8_t pad, uint8_t state, int16_t velo)
         performance.loadSlotFxValues(slot);
 
         performance.setSlotState(slot, 0);
+
+        if (performance.isSceneSlot(slot)) // PNEM: Performance scenes
+            performance.scenePadReleased(slot);
 
         padsBacklight.setFrontLayer(0, 0, pad);
     }
@@ -872,6 +894,7 @@ static void functPads(uint8_t pad, uint8_t state, int16_t velo)
     }
 
     PM->lightUpPadBoard();
+    PM->showSceneTitle(); // PNEM: Performance scenes
 }
 // constexpr uint32_t CC_REFRESH_TIME = 25000;
 

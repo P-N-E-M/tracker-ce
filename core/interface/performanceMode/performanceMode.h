@@ -113,6 +113,7 @@ class cPerformanceMode : public ModuleBase
     //----------------------------------
 
     void setFxValue(int value);
+    void showSceneTitle(); // PNEM: Performance scenes: "Edit scene n" while one is edited
 
     void setPlaceNewFx(uint8_t place, uint8_t newFx);
     uint8_t fxAlredyTaken(uint8_t fx);
