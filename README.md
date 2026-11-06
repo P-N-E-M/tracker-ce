@@ -18,6 +18,7 @@ report problems with them to Polyend; open an issue here instead.
 - **Loop Crossfade**: done, tested on a Tracker+.
 - **X FX (tempo multiplier)**: done, tested on a Tracker+.
 - **Performance Scenes**: done, tested on a Tracker+.
+- **Synth Mute**: done, tested on a Tracker+.
 - **Pads 16**: planned. The Pattern screen's pad preview for all 16 tracks, not only tracks 1-8.
 - More of the same kind will follow.
 
@@ -50,6 +51,23 @@ done. In the Song screen's pattern list (the Pattern column):
 - Performance mode stays on for the whole block, as it does for one pattern with Loop
   Performance.
 - Stop ends the loop. Nothing is saved in the project.
+
+### Synth Mute
+
+On the Master screen's **Global Mixer 3/3** page, Synth 1-3 get mute buttons, the way Delay,
+Reverb, Dry Mix and Line In have them on that page:
+
+- The button under a synth's meter mutes or unmutes it (**Mute** / **Unmute**). **Shift** + the
+  button solos it: the other two synths are muted (**Solo** / **Unsolo** while Shift is held);
+  again unsolos, so all three play.
+- Holding the button to change the synth's volume doesn't change the mute on release.
+- A muted synth's label, volume bar and level meter turn grey; so does a synth slot without
+  voices.
+- The header above each synth shows its model (VAP, ACD, FAT, WTFM, PERC, or "Off" for an empty
+  slot) instead of "Synth 1" .. "Synth 3"; a model on two slots gets the slot number ("ACD 2").
+- The synth keeps running while muted (voices, envelopes, LFOs); its output and its delay and
+  reverb sends are silent, with a short fade so a mute doesn't click.
+- The mutes aren't saved; all three synths play when the Tracker starts.
 
 ### Performance Scenes
 
