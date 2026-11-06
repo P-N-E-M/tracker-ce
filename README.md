@@ -21,6 +21,7 @@ report problems with them to Polyend; open an issue here instead.
 - **Synth Mute**: done, tested on a Tracker+.
 - **MIDI Mixer**: done, tested on a Tracker+.
 - **Pads 16**: done, tested on a Tracker+.
+- **8 track view**: done, tested on a Tracker+.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
@@ -57,6 +58,12 @@ done. In the Song screen's pattern list (the Pattern column):
 
 With Config > General > Pads preview set to **Pattern**, the pads show the notes of all 16 tracks,
 the MIDI tracks too (CE: tracks 1-8).
+
+### 8 track view
+
+The Pattern screen opens with 8 tracks (the Note and Instr columns) after the Tracker starts, and a
+tap on **Pattern** switches between that and the 4-track view. Pattern + Note, Instr, FX1 or FX2
+(choosing the columns) works as in CE. Config > General > **8 track view** turns it off.
 
 ### MIDI Mixer
 
