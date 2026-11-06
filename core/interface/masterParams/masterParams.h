@@ -78,7 +78,8 @@ class cMasterParams : public ModuleBase
     {
         masterValues,
         mixer,
-        mixerDelayReverb
+        mixerDelayReverb,
+        midiMixer, // PNEM: MIDI Mixer: MIDI Track Mixer 3/4 (tracks 9-16)
     };
 
     displayMode displayType = displayMode::masterValues;
@@ -175,6 +176,22 @@ class cMasterParams : public ModuleBase
 #ifdef FEATURE_SYNTH
     strTrackLevel synthLevel[kSynthParts];
 #endif
+
+    // PNEM: MIDI Mixer
+    static constexpr int8_t kMidiSoloBase = 20; // soloTrack of MIDI track n: 20 + n
+    strTrackLevel midiLevel[8];
+    float midiMeter[8] = {};
+    bool midiTrackIsEdited[8] = {};
+    bool ignoreMuteReleaseMidi[8] = {};
+    char midiLevelLabel[8][8];
+    char midiNameLabel[8][10];
+    void switchToMidiMixer();
+    void switchScreenBack();
+    void showMidiMixerScreen();
+    void showMidiTrackLevel(uint8_t n);
+    void changeMidiTrackLevel(int16_t val, uint8_t n);
+    void setDefaultMidiTrackLevel(uint8_t n);
+    void updateMidiMeters();
 
     struct strGainReduction
     {

@@ -19,6 +19,7 @@ report problems with them to Polyend; open an issue here instead.
 - **X FX (tempo multiplier)**: done, tested on a Tracker+.
 - **Performance Scenes**: done, tested on a Tracker+.
 - **Synth Mute**: done, tested on a Tracker+.
+- **MIDI Mixer**: done, tested on a Tracker+.
 - **Pads 16**: planned. The Pattern screen's pad preview for all 16 tracks, not only tracks 1-8.
 - More of the same kind will follow.
 
@@ -51,6 +52,29 @@ done. In the Song screen's pattern list (the Pattern column):
 - Performance mode stays on for the whole block, as it does for one pattern with Loop
   Performance.
 - Stop ends the loop. Nothing is saved in the project.
+
+### MIDI Mixer
+
+The Master screen gets a fourth page, **MIDI Track Mixer 3/4**, between the Sample Track Mixer and
+the Global Mixer. Master now cycles **Master 1/4**, **Sample Track Mixer 2/4**, **MIDI Track
+Mixer 3/4**, **Global Mixer 4/4**; **Shift + Master** goes back. Holding Master shows the master
+volume, as before.
+
+The page looks like the Sample Track Mixer, with one column per MIDI track (Midi 9 .. Midi 16,
+or the names you gave them):
+
+- **Mute / Unmute:** the button under the column. It's the same mute as Shift + softkey in the
+  Pattern screen, so it's saved with the project. A muted track's label, bar and meter turn grey.
+- **Solo / Unsolo:** with **Shift**, the button solos the track: the other 15 tracks (MIDI and
+  sample) are muted; again unsolos all 16. The Sample Track Mixer's Solo now covers all 16 tracks
+  the same way.
+- **Level 0-127:** hold the column's button and turn the encoder or press Up/Down; **Delete**
+  sets it back to 127. Releasing the button after a level change doesn't toggle the mute. The
+  level scales the velocity of each note the track plays (velocity x level / 127, at least 1),
+  for MIDI and for the internal synths; 127 plays the notes as written. Levels aren't saved and
+  start at 127.
+- **Meter:** jumps when the track plays a note, as high as its velocity (after the level), falls
+  slowly while the note sounds and fast after its note-off.
 
 ### Synth Mute
 
