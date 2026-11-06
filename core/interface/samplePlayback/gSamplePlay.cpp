@@ -296,6 +296,20 @@ void cSamplePlayback::showDefaultScreen()
             hideWavetablePositionCursor();
 
             display.setControlText2(label[0], "-");
+
+            if (loopPagesActive())
+            {
+                showLoopPage(); // PNEM: Loop crossfade
+            }
+            else
+            {
+                // PNEM: Loop crossfade: Zoom's colours back after the loop pages' More
+                display.setControlColors(label[5], display.getTheme().activeLabelsColors);
+                if (selectedPlace == kPlaceCrossfade)
+                {
+                    selectedPlace = 6;
+                }
+            }
         }
     }
     else
@@ -399,10 +413,11 @@ void cSamplePlayback::resizeWaveforms()
 //==============================================================================================================
 void cSamplePlayback::activateLabelsBorder()
 {
-    if (selectedPlace > frameData.placesCount - 1)
+    const int8_t button = buttonOfPlace(selectedPlace);
+    if (button < 0 || button > frameData.placesCount - 1)
         return;
 
-    display.setControlValue(frameControl, selectedPlace);
+    display.setControlValue(frameControl, button);
     display.setControlShow(frameControl);
     display.refreshControl(frameControl);
 }
@@ -433,17 +448,16 @@ void cSamplePlayback::showZoomValue()
 {
     sprintf(zoomTextValue, "%.2f", zoom.zoomValue);
 
-    int labelIdx = 5;
-
     if ((editorInstrument->playMode == playModeSlice) ||
         (editorInstrument->playMode == playModeBeatSlice))
     {
-        labelIdx = 4;
+        display.setControlText2(label[4], zoomTextValue);
+        display.setControlShow(label[4]);
+        display.refreshControl(label[4]);
+        return;
     }
 
-    display.setControlText2(label[labelIdx], zoomTextValue);
-    display.setControlShow(label[labelIdx]);
-    display.refreshControl(label[labelIdx]);
+    showPlaceValue(5, zoomTextValue);
 }
 
 void cSamplePlayback::showPlayModeList()
@@ -477,9 +491,7 @@ void cSamplePlayback::showStartPointValue()
 
     formatTimeSeconds(startPointValueText, sizeof(startPointValueText), localStartPoint);
 
-    display.setControlText2(label[1], startPointValueText);
-    display.setControlShow(label[1]);
-    display.refreshControl(label[1]);
+    showPlaceValue(1, startPointValueText);
     display.refreshControl(pointsControl);
 }
 
@@ -500,9 +512,7 @@ void cSamplePlayback::showEndPointValue()
     float localEndPoint = (recTimeValue * editorInstrument->endPoint) / MAX_16BIT;
     formatTimeSeconds(endPointValueText, sizeof(endPointValueText), localEndPoint);
 
-    display.setControlText2(label[4], endPointValueText);
-    display.setControlShow(label[4]);
-    display.refreshControl(label[4]);
+    showPlaceValue(4, endPointValueText);
     display.refreshControl(pointsControl);
 }
 
@@ -529,9 +539,7 @@ void cSamplePlayback::showLoopPoint1Value()
 
     formatTimeSeconds(loopPoint1ValueText, sizeof(loopPoint1ValueText), localLoopPoint1);
 
-    display.setControlText2(label[2], loopPoint1ValueText);
-    display.setControlShow(label[2]);
-    display.refreshControl(label[2]);
+    showPlaceValue(2, loopPoint1ValueText);
     display.refreshControl(pointsControl);
 }
 
@@ -558,9 +566,7 @@ void cSamplePlayback::showLoopPoint2Value()
 
     formatTimeSeconds(loopPoint2ValueText, sizeof(loopPoint2ValueText), localLoopPoint2);
 
-    display.setControlText2(label[3], loopPoint2ValueText);
-    display.setControlShow(label[3]);
-    display.refreshControl(label[3]);
+    showPlaceValue(3, loopPoint2ValueText);
     display.refreshControl(pointsControl);
 }
 
@@ -575,16 +581,12 @@ void cSamplePlayback::showPreviewValue()
 
     formatTimeSeconds(playTimeValueText, sizeof(playTimeValueText), playTimeValue);
 
-    display.setControlText2(label[0], playTimeValueText);
-    display.setControlShow(label[0]);
-    display.refreshControl(label[0]);
+    showPlaceValue(0, playTimeValueText);
 }
 
 void cSamplePlayback::hidePreviewValue()
 {
-    display.setControlText2(label[0], "-");
-    display.setControlShow(label[0]);
-    display.refreshControl(label[0]);
+    showPlaceValue(0, "-");
 }
 
 void cSamplePlayback::hideLoopPoints()
@@ -600,6 +602,13 @@ void cSamplePlayback::hideLoopPoints()
 
 void cSamplePlayback::showLoopPoints()
 {
+    if (loopPagesActive())
+    {
+        showLoopPoint1Value();
+        showLoopPoint2Value();
+        return;
+    }
+
     display.setControlText(label[2], "Loop Start");
     display.setControlShow(label[2]);
     display.refreshControl(label[2]);
@@ -819,3 +828,123 @@ void cSamplePlayback::formatTimeSeconds(char* destBuffer, size_t destBufferSize,
 }
 
 //==============================================================================================================
+
+//==============================================================================================================
+// PNEM: Loop crossfade: the two button pages of Forward Loop and Backward Loop
+
+bool cSamplePlayback::loopPagesActive() const
+{
+    return editorInstrument != nullptr && loadedInstrumentType == mtSampleTypeWaveFile &&
+           (editorInstrument->playMode == playModeLoopForward ||
+            editorInstrument->playMode == playModeLoopBackward);
+}
+
+// per page, the parameter (place) on buttons 0..4; -1 a blank button. Button 5 is More,
+// buttons 6 and 7 the play mode list (place 6).
+static const int8_t kLoopPagePlaces[2][5] = {
+    { 0, 1, -1, 4, 5 },
+    { 2, 3, cSamplePlayback::kPlaceCrossfade, -1, -1 },
+};
+
+static const char* const kLoopPageLabels[2][6] = {
+    { "Preview", "Start", "", "End", "Zoom", "More" },
+    { "Loop Start", "Loop End", "Crossfade", "", "", "More" },
+};
+
+int8_t cSamplePlayback::buttonOfPlace(uint8_t place) const
+{
+    if (!loopPagesActive())
+    {
+        return place == kPlaceCrossfade ? -1 : (int8_t)place;
+    }
+    if (place == 6)
+    {
+        return 6;
+    }
+    for (int8_t b = 0; b < 5; b++)
+    {
+        if (kLoopPagePlaces[loopScreenMode2][b] == place)
+        {
+            return b;
+        }
+    }
+    return -1;
+}
+
+int8_t cSamplePlayback::placeOfButton(uint8_t button) const
+{
+    if (!loopPagesActive())
+    {
+        return (int8_t)button;
+    }
+    return button < 5 ? kLoopPagePlaces[loopScreenMode2][button] : -1;
+}
+
+hControl cSamplePlayback::labelOfPlace(uint8_t place) const
+{
+    const int8_t button = buttonOfPlace(place);
+    return (button >= 0 && button < 6) ? label[button] : -1;
+}
+
+void cSamplePlayback::showPlaceValue(uint8_t place, const char* text)
+{
+    const hControl l = labelOfPlace(place);
+    if (l < 0)
+    {
+        return;
+    }
+    display.setControlText2(l, text);
+    display.setControlShow(l);
+    display.refreshControl(l);
+}
+
+void cSamplePlayback::showCrossfadeValue()
+{
+    const uint16_t ms = editorInstrument->loopCrossfadeMs();
+    snprintf(crossfadeValueText, sizeof(crossfadeValueText), "%u.%03us", ms / 1000u, ms % 1000u);
+    showPlaceValue(kPlaceCrossfade, crossfadeValueText);
+}
+
+// After CE laid out the loop modes: the page that holds the selected parameter, its labels
+// and values, and More with the page dots (as Slice's).
+void cSamplePlayback::showLoopPage()
+{
+    if (selectedPlace == 2 || selectedPlace == 3 || selectedPlace == kPlaceCrossfade)
+    {
+        loopScreenMode2 = true;
+    }
+    else if (selectedPlace == 1 || selectedPlace == 4 || selectedPlace == 5)
+    {
+        loopScreenMode2 = false;
+    }
+
+    display.setAddControlStyle(label[5], controlStyleSpecialFx2);
+    display.setControlData(label[5], &labelDataMore);
+    display.setControlColors(label[5], display.getTheme().moreButtonColors);
+    labelDataMore.dotIndicator.current = loopScreenMode2 ? 1 : 0;
+
+    for (uint8_t i = 0; i < 6; i++)
+    {
+        display.setControlText(label[i], kLoopPageLabels[loopScreenMode2][i]);
+        display.setControlText2(label[i], "");
+        display.setControlShow(label[i]);
+        display.refreshControl(label[i]);
+    }
+
+    if (!loopScreenMode2)
+    {
+        if (isPlayingSample)
+            showPreviewValue();
+        else
+            hidePreviewValue();
+        showStartPointValue();
+        showEndPointValue();
+        showZoomValue();
+    }
+    else
+    {
+        showLoopPoint1Value();
+        showLoopPoint2Value();
+        showCrossfadeValue();
+    }
+}

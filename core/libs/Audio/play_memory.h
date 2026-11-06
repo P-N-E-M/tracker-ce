@@ -30,6 +30,7 @@
 #include "AudioStream.h"
 #include "VoiceStreamManager.h"
 #include "amplifier.h"
+#include "loopCrossfade.h"
 #include "mtStructs.h"
 
 class Timer;
@@ -339,6 +340,27 @@ class AudioPlayMemory : public AudioStream
                                             absFrame,
                                             (const int16_t*)currentStartAddress,
                                             currentPreCacheFrames);
+    }
+
+    // PNEM: Loop crossfade. The instrument's crossfade in frames; none for a streamed sample (its
+    // frames across the seam aren't in RAM, and a miss would mute the voice).
+    inline uint32_t loopCrossfadeFrames() const
+    {
+        return currentIsStreamed ? 0 : mtProject.instrument[currentInstrIdx].loopCrossfadeFrames();
+    }
+
+    // PNEM: Loop crossfade. The frame at rel, interpolated towards rel + neighbour as the renders
+    // read their own (weight: the fraction's magnitude in 1/65535).
+    inline int16_t readInterpolatedAtRel(const int16_t* in,
+                                         int32_t rel,
+                                         int32_t neighbour,
+                                         int32_t weight) const
+    {
+        const int16_t s = readSampleAtRel(in, rel);
+        if (interpolationCondition)
+            return s;
+        const int32_t dif = readSampleAtRel(in, rel + neighbour) - s;
+        return (int16_t)(s + (int32_t)(((weight >> 2) * dif) >> 14));
     }
 
     inline void updateStreamPlayhead(int32_t relOffset, int8_t dir)

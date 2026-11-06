@@ -48,6 +48,17 @@ static void functButton4(uint8_t state);
 static void functButton5();
 static void functPlayMode(uint8_t button);
 
+// PNEM: Loop crossfade: the buttons as registered, with Forward Loop's and Backward Loop's pages
+static void functPagedButton0(uint8_t state);
+static void functPagedButton1(uint8_t state);
+static void functPagedButton2(uint8_t state);
+static void functPagedButton3(uint8_t state);
+static void functPagedButton4(uint8_t state);
+static void functPagedButton5();
+static bool loopPageStep(int8_t direction);
+static void selectLoopCrossfade();
+static void modLoopCrossfade(int16_t value);
+
 static void functAddSlice();
 static void functRemoveSlice();
 
@@ -353,12 +364,12 @@ void cSamplePlayback::setDefaultScreenFunct()
 
     ip->setButtonObj(interfaceButtonMiniMiddle, functMiniMiddle);
 
-    ip->setButtonObj(interfaceButton0, functButton0);
-    ip->setButtonObj(interfaceButton1, functButton1);
-    ip->setButtonObj(interfaceButton2, functButton2);
-    ip->setButtonObj(interfaceButton3, functButton3);
-    ip->setButtonObj(interfaceButton4, functButton4);
-    ip->setButtonObj(interfaceButton5, buttonPress, functButton5);
+    ip->setButtonObj(interfaceButton0, functPagedButton0);
+    ip->setButtonObj(interfaceButton1, functPagedButton1);
+    ip->setButtonObj(interfaceButton2, functPagedButton2);
+    ip->setButtonObj(interfaceButton3, functPagedButton3);
+    ip->setButtonObj(interfaceButton4, functPagedButton4);
+    ip->setButtonObj(interfaceButton5, buttonPress, functPagedButton5);
 
     ip->setButtonObj(interfaceButton6, buttonPress, functPlayMode);
     ip->setButtonObj(interfaceButton7, buttonPress, functPlayMode);
@@ -780,7 +791,7 @@ static void functButton1(uint8_t state)
             {
                 SP->addNode(modStartPoint, 0);
 
-                SP->frameData.multisel[1].frameNum = 1;
+                SP->frameData.multisel[1].frameNum = SP->buttonOfPlace(1);
                 SP->frameData.multisel[1].isActive = 1;
                 SP->frameData.multiSelActiveNum += 1;
             }
@@ -871,7 +882,7 @@ static void functButton2(uint8_t state)
             {
                 SP->addNode(modLoopPoint1, 1);
 
-                SP->frameData.multisel[2].frameNum = 2;
+                SP->frameData.multisel[2].frameNum = SP->buttonOfPlace(2);
                 SP->frameData.multisel[2].isActive = 1;
                 SP->frameData.multiSelActiveNum += 1;
             }
@@ -975,7 +986,7 @@ static void functButton3(uint8_t state)
             {
                 SP->addNode(modLoopPoint2, 2);
 
-                SP->frameData.multisel[3].frameNum = 3;
+                SP->frameData.multisel[3].frameNum = SP->buttonOfPlace(3);
                 SP->frameData.multisel[3].isActive = 1;
                 SP->frameData.multiSelActiveNum += 1;
             }
@@ -1070,7 +1081,7 @@ static void functButton4(uint8_t state)
             {
                 SP->addNode(modEndPoint, 3);
 
-                SP->frameData.multisel[4].frameNum = 4;
+                SP->frameData.multisel[4].frameNum = SP->buttonOfPlace(4);
                 SP->frameData.multisel[4].isActive = 1;
                 SP->frameData.multiSelActiveNum += 1;
             }
@@ -1276,6 +1287,7 @@ static void functEncoder(int16_t value)
                 changePlayModeSelection(interfaceGlobals.invertValForList ? -value : value);
                 break;
             }
+            case cSamplePlayback::kPlaceCrossfade: modLoopCrossfade(value); break;
         }
     }
 }
@@ -1283,6 +1295,10 @@ static void functEncoder(int16_t value)
 static void functLeft()
 {
     if (SP->frameData.multiSelActiveNum != 0)
+    {
+        return;
+    }
+    if (loopPageStep(-1))
     {
         return;
     }
@@ -1411,6 +1427,10 @@ static void functLeft()
 static void functRight()
 {
     if (SP->frameData.multiSelActiveNum != 0)
+    {
+        return;
+    }
+    if (loopPageStep(1))
     {
         return;
     }
@@ -1619,6 +1639,7 @@ static void functUp()
             }
             case 5: changeZoom(1); break;
             case 6: changePlayModeSelection(-1); break;
+            case cSamplePlayback::kPlaceCrossfade: modLoopCrossfade(1); break;
         }
     }
 }
@@ -1723,6 +1744,7 @@ static void functDown()
             }
             case 5: changeZoom(-1); break;
             case 6: changePlayModeSelection(1); break;
+            case cSamplePlayback::kPlaceCrossfade: modLoopCrossfade(-1); break;
         }
     }
 }
@@ -2698,6 +2720,11 @@ void cSamplePlayback::setDefault(uint8_t pos)
         }
         case 5: setDefaultZoom(); break;
         case 6: break;
+        case kPlaceCrossfade:
+            editorInstrument->setLoopCrossfadeMs(0);
+            newFileManager.setInstrumentStructChanged(mtProject.values.lastUsedInstrument);
+            showCrossfadeValue();
+            break;
     }
 }
 
@@ -3422,4 +3449,154 @@ static void functMenu(uint8_t state)
     {
         mtMenuPopup.hideModulePopup(SP);
     }
+}
+
+//==============================================================================================================
+// PNEM: Loop crossfade: Forward Loop's and Backward Loop's two button pages
+
+// A button of the page shown: CE's own function for the parameter it shows.
+static void functLoopPageButton(uint8_t button, uint8_t state)
+{
+    switch (SP->placeOfButton(button))
+    {
+        case 0: functButton0(state); break;
+        case 1: functButton1(state); break;
+        case 2: functButton2(state); break;
+        case 3: functButton3(state); break;
+        case 4: functButton4(state); break;
+        case 5:
+            if (state == buttonPress)
+                functButton5(); // Zoom
+            break;
+        case cSamplePlayback::kPlaceCrossfade:
+            if (state == buttonPress)
+                selectLoopCrossfade();
+            break;
+        default: break; // a blank button
+    }
+}
+
+static void functPagedButton0(uint8_t state)
+{
+    SP->loopPagesActive() ? functLoopPageButton(0, state) : functButton0(state);
+}
+
+static void functPagedButton1(uint8_t state)
+{
+    SP->loopPagesActive() ? functLoopPageButton(1, state) : functButton1(state);
+}
+
+static void functPagedButton2(uint8_t state)
+{
+    SP->loopPagesActive() ? functLoopPageButton(2, state) : functButton2(state);
+}
+
+static void functPagedButton3(uint8_t state)
+{
+    SP->loopPagesActive() ? functLoopPageButton(3, state) : functButton3(state);
+}
+
+static void functPagedButton4(uint8_t state)
+{
+    SP->loopPagesActive() ? functLoopPageButton(4, state) : functButton4(state);
+}
+
+// More: the other page, with its first parameter selected (unless the play mode list is).
+static void functPagedButton5()
+{
+    if (!SP->loopPagesActive())
+    {
+        functButton5();
+        return;
+    }
+
+    SP->cancelMultiFrame();
+    SP->clearAllNodes();
+    SP->loopScreenMode2 = !SP->loopScreenMode2;
+    if (SP->selectedPlace != 6)
+    {
+        if (SP->loopScreenMode2)
+            functButton2(UINT8_MAX); // Loop Start
+        else
+            functButton1(UINT8_MAX); // Start
+    }
+    SP->showDefaultScreen();
+}
+
+// Selects a parameter of the loop pages as its button would (without multi-select).
+static void selectLoopPlace(uint8_t place)
+{
+    switch (place)
+    {
+        case 1: functButton1(UINT8_MAX); break;
+        case 2: functButton2(UINT8_MAX); break;
+        case 3: functButton3(UINT8_MAX); break;
+        case 4: functButton4(UINT8_MAX); break;
+        case 5: functButton5(); break;
+        case cSamplePlayback::kPlaceCrossfade: selectLoopCrossfade(); break;
+        default:
+            SP->selectedPlace = 6;
+            SP->points.selected = 0;
+            SP->refreshPoints = 1;
+            SP->activateLabelsBorder();
+            break;
+    }
+}
+
+// Left / Right on the loop pages: through the page's parameters, then the play mode list.
+// False: not on the loop pages (CE's Left / Right).
+static bool loopPageStep(int8_t direction)
+{
+    if (!SP->loopPagesActive())
+    {
+        return false;
+    }
+    static const uint8_t order[2][4] = {
+        { 1, 4, 5, 6 },
+        { 2, 3, cSamplePlayback::kPlaceCrossfade, 6 },
+    };
+    const uint8_t* places = order[SP->loopScreenMode2];
+    int8_t at = -1;
+    for (int8_t i = 0; i < 4; i++)
+    {
+        if (places[i] == SP->selectedPlace)
+        {
+            at = i;
+        }
+    }
+    int8_t next = at < 0 ? 0 : at + direction;
+    if (next < 0 || next > 3)
+    {
+        return true;
+    }
+    selectLoopPlace(places[next]);
+    return true;
+}
+
+static void selectLoopCrossfade()
+{
+    SP->cancelMultiFrame();
+    SP->clearAllNodes();
+    SP->points.selected = 0;
+    SP->refreshPoints = 1;
+    SP->selectedPlace = cSamplePlayback::kPlaceCrossfade;
+    SP->activateLabelsBorder();
+}
+
+// The encoder, Up / Down: 1 ms steps below 0.1 s, 10 ms below 1 s, 100 ms above.
+static void modLoopCrossfade(int16_t value)
+{
+    int32_t ms = SP->editorInstrument->loopCrossfadeMs();
+    const int32_t steps = value < 0 ? -(int32_t)value : (int32_t)value;
+    for (int32_t i = 0; i < steps && i < 200; i++) // 200 steps cover the whole range
+    {
+        if (value > 0)
+            ms += ms < 100 ? 1 : ms < 1000 ? 10 : 100;
+        else
+            ms -= ms <= 100 ? 1 : ms <= 1000 ? 10 : 100;
+    }
+    ms = clamp<int32_t>(ms, 0, strInstrument::kLoopCrossfadeMaxMs);
+    SP->editorInstrument->setLoopCrossfadeMs((uint16_t)ms);
+    newFileManager.setInstrumentStructChanged(mtProject.values.lastUsedInstrument);
+    SP->showCrossfadeValue();
 }

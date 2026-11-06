@@ -15,6 +15,7 @@ report problems with them to Polyend; open an issue here instead.
 ## Status
 
 - **Song Loop**: done, tested on a Tracker+.
+- **Loop Crossfade**: done, tested on a Tracker+.
 - **Pads 16**: planned. The Pattern screen's pad preview for all 16 tracks, not only tracks 1-8.
 - More of the same kind will follow.
 
@@ -47,6 +48,43 @@ done. In the Song screen's pattern list (the Pattern column):
 - Performance mode stays on for the whole block, as it does for one pattern with Loop
   Performance.
 - Stop ends the loop. Nothing is saved in the project.
+
+### Loop Crossfade
+
+Each instrument gets a **Crossfade** for the play modes Forward Loop and Backward Loop: the
+end of the loop fades into its start, so a loop runs without a click at the seam. **0.000s**
+is a hard jump, as in CE.
+
+In Forward Loop and Backward Loop, the Sample Playback screen's six buttons have two pages:
+
+- page 1: **Preview | Start | – | End | Zoom | More**
+- page 2: **Loop Start | Loop End | Crossfade | – | – | More**
+
+**More** switches pages; the dots on it show the page, as in Slice. Every button does what
+its label says, and Start, End, Loop Start and Loop End work as in CE, including holding two
+of them to move both. Left and Right step through the page's buttons, then to the Play Mode
+list. The other play modes keep CE's buttons.
+
+- **Setting it:** press Crossfade, then turn the encoder or press Up/Down: 1 ms steps below
+  0.1 s, 10 ms below 1 s, 100 ms above, up to **10.000s**. Delete sets it back to 0.000s.
+  A value of 2.000s means the last 2 seconds before the loop end fade out while the 2 seconds
+  before the loop start fade in.
+- **Equal power:** the two sides are mixed with sine and cosine gains, so the loudness stays
+  even on average.
+- **Where the fade reads:** the sample as it continues across the seam: the frames before the
+  loop start (also before Start, down to the sample's first frame). Backward Loop and reversed
+  playback loop backwards, so there it's the frames after the loop end. Backward Loop's first
+  pass to the loop end plays as in CE.
+- **Shorter when it must:** the fade never lasts longer than the loop, and never reaches past
+  the sample. With the loop start on the sample's first frame there is nothing to fade with,
+  and the loop jumps as in CE.
+- **Time:** the value is in the sample's own time, like the loop points: an octave up, the
+  fade takes half as long.
+- **Streamed samples** (streaming set when importing) don't crossfade: the frames across the
+  seam aren't in memory. Pingpong Loop has no jump and is left as it is.
+- **Saved in the instrument:** the value travels with the project, a copied instrument and a
+  `.pti` file. It sits in bytes the instrument file already had as padding, so CE loads
+  these files as before and ignores it.
 
 ## Install
 
