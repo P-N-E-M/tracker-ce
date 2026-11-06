@@ -369,6 +369,7 @@ class InterfaceGlobals
         Sequencer::strFxConsts::enFxType::FX_TYPE_MICROTUNING,
         Sequencer::strFxConsts::enFxType::FX_TYPE_GLIDE,
         Sequencer::strFxConsts::enFxType::FX_TYPE_TEMPO,
+        Sequencer::strFxConsts::enFxType::FX_TYPE_TEMPO_MULTIPLIER, // PNEM: X FX
         Sequencer::strFxConsts::enFxType::FX_TYPE_SWING,
         Sequencer::strFxConsts::enFxType::FX_TYPE_MICROMOVE,
         Sequencer::strFxConsts::enFxType::FX_TYPE_GATE_LENGTH,
@@ -420,6 +421,7 @@ class InterfaceGlobals
                                                                   "M - Micro-tune/Pitchbend",
                                                                   "G - Glide",
                                                                   "T - Tempo",
+                                                                  "X - Tempo multiplier",
                                                                   "I - Swing",
                                                                   "m - Micro-move",
                                                                   "q - Gate Length",
@@ -476,6 +478,7 @@ class InterfaceGlobals
                                                                        "Micro-tune",
                                                                        "Glide",
                                                                        "Tempo",
+                                                                       "Tempo mult",
                                                                        "Swing",
                                                                        "Micro-move",
                                                                        "Gate Length",
@@ -535,7 +538,7 @@ class InterfaceGlobals
         &fxNames[29][0], &fxNames[30][0], &fxNames[31][0], &fxNames[32][0], &fxNames[33][0],
         &fxNames[34][0], &fxNames[35][0], &fxNames[36][0], &fxNames[37][0], &fxNames[38][0],
         &fxNames[39][0], &fxNames[40][0], &fxNames[41][0], &fxNames[42][0],
-        &fxNames[43][0], &fxNames[44][0], &fxNames[45][0]
+        &fxNames[43][0], &fxNames[44][0], &fxNames[45][0], &fxNames[46][0]
     };
 
     static constexpr const char* ptrAllFxNamesShort[FX_COUNT + 1] = {
@@ -585,7 +588,8 @@ class InterfaceGlobals
         &fxShortNames[42][0],
         &fxShortNames[43][0],
         &fxShortNames[44][0],
-        &fxShortNames[45][0]
+        &fxShortNames[45][0],
+        &fxShortNames[46][0]
     };
 
     static constexpr const char* const* ptrFxNames = &ptrAllFxNames[1];

@@ -183,6 +183,9 @@ class Sequencer
             FX_TYPE_R8,
             FX_TYPE_R9,
 
+            // PNEM: X - Tempo multiplier. Its own number, far from CE's (which count up from 0), so
+            // a new CE FX never takes it. Value 0..6: 1/8, 1/4, 1/2, 1, 2, 4, 8.
+            FX_TYPE_TEMPO_MULTIPLIER = 200,
         };
 
         enum enRollPeriod
@@ -402,6 +405,22 @@ class Sequencer
             }
 
         } tempoFx;
+
+        // PNEM: X FX. The sequencer runs at x8 / 8 times its tempo, until the next X, the next
+        // pattern or stop. MIDI clock out stays at the project tempo: once an X leaves 1 in a
+        // take, the clock comes from clockPhase instead of track 1's micro-steps.
+        struct strTempoMultiplier
+        {
+            uint8_t x8 = 8;          // 1 (1/8) .. 64 (8)
+            bool ownClock = false;   // the clock from clockPhase, until stop
+            uint16_t clockPhase = 0; // eighths of a project-tempo tick since the last clock pulse
+            uint8_t externalEighths = 0; // external clock: eighths of a tick still to run
+
+            static constexpr uint16_t kClockPeriod = 96 * 8; // 96 ticks per MIDI clock pulse
+
+            void set(uint8_t value) { x8 = (uint8_t)(1u << (value > 6 ? 6 : value)); }
+            void reset() { x8 = 8; }
+        } tempoMultiplier;
 
         struct strSwing
         {
@@ -960,6 +979,8 @@ class Sequencer
     void play(uint8_t fromPos);
 
     void tick_uStep(void);
+    void tempoMultiplierClock(uint8_t x8); // PNEM: X FX
+    void applyPatternStartTempoMultiplier(); // PNEM: X FX
 
     void applyRowCustomFx(uint8_t x, uint8_t orderTemp);
 

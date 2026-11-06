@@ -96,7 +96,10 @@ AUDIO_CORE_RAM void Sequencer::tick(float intervalSeconds)
 
     if (isSetInternalClock() || player.selectionMode)
     {
-        double uStepPeriod_us = static_cast<double>(getTimerPeriod_us());
+        // PNEM: X FX: the tick period divided by the multiplier, from the tick an X plays on
+        const double basePeriodUs = static_cast<double>(getTimerPeriod_us());
+        uint8_t x8 = player.tempoMultiplier.x8;
+        double uStepPeriod_us = basePeriodUs * 8.0 / x8;
         double blockDurationUs = static_cast<double>(intervalSeconds) * 1000000.0;
 
         internalTickAccumulatorUs += blockDurationUs;
@@ -108,6 +111,12 @@ AUDIO_CORE_RAM void Sequencer::tick(float intervalSeconds)
             midiSetClockSubBlockOffsetUs(
               offsetUs > 0.0 ? static_cast<uint32_t>(offsetUs + 0.5) : 0U);
             tick_uStep();
+            tempoMultiplierClock(x8);
+            if (player.tempoMultiplier.x8 != x8)
+            {
+                x8 = player.tempoMultiplier.x8;
+                uStepPeriod_us = basePeriodUs * 8.0 / x8;
+            }
         }
     }
     else
@@ -127,7 +136,15 @@ AUDIO_CORE_RAM void Sequencer::tick(float intervalSeconds)
         {
             for (int tick = 0; tick < nanoTicksInClockPulse; tick++)
             {
-                tick_uStep();
+                // PNEM: X FX: x8 / 8 ticks for each tick of the received clock
+                const uint8_t x8 = player.tempoMultiplier.x8;
+                player.tempoMultiplier.externalEighths += x8;
+                while (player.tempoMultiplier.externalEighths >= 8)
+                {
+                    player.tempoMultiplier.externalEighths -= 8;
+                    tick_uStep();
+                    tempoMultiplierClock(x8);
+                }
             }
             externalClocksToPlay--;
         }
@@ -347,7 +364,14 @@ AUDIO_CORE_RAM void Sequencer::play_microStep(int row)
         (!player.selectionMode || player.selectionModeLooped))
     {
         if (((playerRow.uStep - 1) % 8) == 0)
-            sendMidiClock();
+        {
+            // PNEM: X FX: track 1's clock while no X left 1; tempoMultiplierClock's after that
+            if (!player.tempoMultiplier.ownClock)
+            {
+                sendMidiClock();
+                player.tempoMultiplier.clockPhase = 0;
+            }
+        }
     }
 
     // jeśli ostatni step, zażądaj ładowania kolejnego patternu
@@ -694,6 +718,19 @@ AUDIO_CORE_RAM void Sequencer::play_microStep(int row)
                     else
                     {
                         player.tempoFx.set(tempoToSet);
+                    }
+                    break;
+                }
+
+                case fx.FX_TYPE_TEMPO_MULTIPLIER: // PNEM: X FX
+                {
+                    killFxOnSlot(row, fxIndex);
+                    atLeastOneFx = 1;
+
+                    player.tempoMultiplier.set(_fx.value);
+                    if (player.tempoMultiplier.x8 != 8)
+                    {
+                        player.tempoMultiplier.ownClock = true;
                     }
                     break;
                 }
@@ -1564,6 +1601,10 @@ void Sequencer::stop(StopContext context)
     songTimer.stop();
     stopAllOpenNotes();
     cancelFxes();
+    // PNEM: X FX: the next take starts with track 1's clock
+    player.tempoMultiplier.ownClock = false;
+    player.tempoMultiplier.clockPhase = 0;
+    player.tempoMultiplier.externalEighths = 0;
 
     player.isPlay = 0;
     player.isStop = 1;
@@ -3162,6 +3203,7 @@ uint8_t Sequencer::noMoreRecOpen()
 AUDIO_CORE_RAM void Sequencer::cancelFxes()
 {
     player.tempoFx.reset();
+    player.tempoMultiplier.reset(); // PNEM: X FX
 
     for (uint8_t a = 0; a < kAllTracks; a++)
     {
@@ -3361,6 +3403,7 @@ void Sequencer::switchRamPatternsNow()
 {
     cancelFxes();
     std::swap(currentPattern, bufferPattern);
+    applyPatternStartTempoMultiplier(); // PNEM: X FX
 
     int bufferPatternIdx = newFileManager.getLoadedPatternIndex();
     assert(bufferPatternIdx >= 0);
@@ -3844,4 +3887,46 @@ int instrumentIdxToSynthIdx(int instrumentIdx)
 {
     assert(isSynthInstrument(instrumentIdx));
     return instrumentIdxToMidiChannel(instrumentIdx) - 1;
+}
+
+// PNEM: X FX. After a tick of the sequencer (it took 8 / x8 project-tempo ticks): MIDI clock out
+// at the project tempo, once an X left 1 in this take (track 1's clock follows the pattern).
+AUDIO_CORE_RAM void Sequencer::tempoMultiplierClock(uint8_t x8)
+{
+    auto& tm = player.tempoMultiplier;
+    if (!player.isPlay)
+    {
+        return;
+    }
+    tm.clockPhase += 64 / x8;
+    if (tm.clockPhase >= tm.kClockPeriod)
+    {
+        tm.clockPhase -= tm.kClockPeriod;
+        if (tm.ownClock && (!player.selectionMode || player.selectionModeLooped))
+        {
+            sendMidiClock();
+        }
+    }
+}
+
+// PNEM: X FX. A new pattern starts with the X on its first step (any track), also for tracks that
+// start it elsewhere (Performance: backwards, at random).
+AUDIO_CORE_RAM void Sequencer::applyPatternStartTempoMultiplier()
+{
+    for (uint8_t t = 0; t < kAllTracks; t++)
+    {
+        for (uint8_t s = 0; s < kStepFxSlots; s++)
+        {
+            const auto& f = currentPattern->track[t].step[0].fx[s];
+            if (f.type == fx.FX_TYPE_TEMPO_MULTIPLIER)
+            {
+                player.tempoMultiplier.set(f.value);
+                if (player.tempoMultiplier.x8 != 8)
+                {
+                    player.tempoMultiplier.ownClock = true;
+                }
+                return;
+            }
+        }
+    }
 }

@@ -187,7 +187,8 @@ uint8_t Sequencer::generateRandomFx()
     uint8_t retVal;
     for (uint8_t a = 0; a < 100; a++)
     {
-        retVal = utilMathRandom::random(fx.FX_TYPE_OFF + 1, FX_COUNT - FX_COUNT_HIDDEN_FXes + 1);
+        retVal = utilMathRandom::random(fx.FX_TYPE_OFF + 1,
+                                        FX_COUNT - FX_COUNT_PNEM - FX_COUNT_HIDDEN_FXes + 1);
         if (retVal != fx.FX_TYPE_TEMPO && retVal != fx.FX_TYPE_BREAK_PATTERN // breaka nie chcemy
         )
             break;
@@ -993,7 +994,8 @@ void Sequencer::changeSelectionFxType(uint8_t index, int16_t value)
 
                 uint8_t previousType = _fx->type;
 
-                _fx->type = clamp<int>(interfaceGlobals.fxNameToId(name), 0, 47);
+                // PNEM: X FX: fxNameToId gives a valid type or 0, and X's type is above 47
+                _fx->type = interfaceGlobals.fxNameToId(name);
 
                 if (previousType != _fx->type && !isMultiSelection())
                 {
@@ -1755,6 +1757,7 @@ AUDIO_CORE_RAM int16_t Sequencer::getFxMax(uint8_t fxID, bool forRandom)
 
         case fx.FX_TYPE_MICROMOVE: return 100;
         case fx.FX_TYPE_TEMPO: return MAX_TEMPO_FX;
+        case fx.FX_TYPE_TEMPO_MULTIPLIER: return 6; // PNEM: X FX: 1/8 .. 8
         case fx.FX_TYPE_SWING: return 75;
         case fx.FX_TYPE_OFF: return 0;
         case fx.FX_TYPE_RANDOM_INSTRUMENT: return 47;
@@ -1815,6 +1818,7 @@ int16_t Sequencer::getFxDefault(uint8_t fxID)
     {
         case fx.FX_TYPE_OFF: return 0;
         case fx.FX_TYPE_TEMPO: return 60;
+        case fx.FX_TYPE_TEMPO_MULTIPLIER: return 3; // PNEM: X FX: 1
         case fx.FX_TYPE_SWING: return 50;
         case fx.FX_TYPE_ROLL: return 1;
         case fx.FX_TYPE_BREAK_PATTERN: return 1;
@@ -2019,6 +2023,13 @@ void Sequencer::makeFxValLabelWithAlgin(char* ptr,
             break;
         }
         case fx.FX_TYPE_MIDI_CHORD: strncpy(ptr, chordDefName[valAfterCorrection], len); break;
+        case fx.FX_TYPE_TEMPO_MULTIPLIER: // PNEM: X FX
+        {
+            static const char* const kTexts[7] = { "1/8", "1/4", "1/2", "1", "2", "4", "8" };
+            const char* text = kTexts[valueFromFx > 6 ? 6 : valueFromFx];
+            snprintf(ptr, len, align == fxValLabelAlign_right ? "%3s" : "%s", text);
+            break;
+        }
         case fx.FX_TYPE_TEMPO:
         {
             if (valueFromFx == getFxMin(fxType))
