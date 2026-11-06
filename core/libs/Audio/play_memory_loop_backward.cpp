@@ -57,6 +57,15 @@ AUDIO_CORE_RAM audio_block_t* AudioPlayMemory::updateLoopBackwardNormal()
 
         int32_t currentInterpolationFraction;
 
+        // PNEM: Loop crossfade, once the loop plays backwards: the zone above the loop start,
+        // mixed with the frames above the loop end (up to the sample's last frame)
+        const LoopCrossfadeZone xfade = LoopCrossfadeZone::down(
+          loopCrossfadeFrames(),
+          loopStartPoint,
+          (int32_t)constrainsInSamples.loopPoint2,
+          (int32_t)currentSampleLength - 1 -
+            (int32_t)(pointsInSamples.start + constrainsInSamples.loopPoint2));
+
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
         {
             if ((int32_t)length > iPitchCounter)
@@ -99,8 +108,19 @@ AUDIO_CORE_RAM audio_block_t* AudioPlayMemory::updateLoopBackwardNormal()
                                                  ? -currentFractionPitchCounter
                                                  : currentFractionPitchCounter;
 
-                *out++ = (int32_t)currentSampelValue +
-                         (int32_t)(((currentInterpolationFraction >> 2) * interpolationDif) >> 14);
+                int16_t sampleOut =
+                  (int32_t)currentSampelValue +
+                  (int32_t)(((currentInterpolationFraction >> 2) * interpolationDif) >> 14);
+                if (loopBackwardFlag && xfade.covers(iPitchCounter))
+                {
+                    sampleOut = xfade.mix(sampleOut,
+                                          readInterpolatedAtRel(in,
+                                                                iPitchCounter + xfade.across,
+                                                                interpOffset,
+                                                                currentInterpolationFraction),
+                                          xfade.depth(iPitchCounter));
+                }
+                *out++ = sampleOut;
 
                 if (!loopBackwardFlag)
                 {
@@ -200,6 +220,17 @@ AUDIO_CORE_RAM audio_block_t* AudioPlayMemory::updateLoopBackwardReverse()
         int32_t interpOffset = loopBackwardFlag ? 1 : -1;
         int32_t currentInterpolationFraction;
 
+        // PNEM: Loop crossfade, once the loop plays forwards: the zone below the loop end, mixed
+        // with the frames below the loop start (where the render jumps to; down to the sample's
+        // first frame)
+        const int32_t xfadeTarget =
+          constrainsInSamples.loopPoint1 ? (int32_t)constrainsInSamples.loopPoint1 : 1;
+        const LoopCrossfadeZone xfade =
+          LoopCrossfadeZone::up(loopCrossfadeFrames(),
+                                loopEndPoint,
+                                xfadeTarget,
+                                (int32_t)pointsInSamples.start + xfadeTarget);
+
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
         {
             if ((int32_t)iPitchCounter > 0)
@@ -242,8 +273,19 @@ AUDIO_CORE_RAM audio_block_t* AudioPlayMemory::updateLoopBackwardReverse()
                                                  ? -currentFractionPitchCounter
                                                  : currentFractionPitchCounter;
 
-                *out++ = (int32_t)currentSampelValue +
-                         (int32_t)(((currentInterpolationFraction >> 2) * interpolationDif) >> 14);
+                int16_t sampleOut =
+                  (int32_t)currentSampelValue +
+                  (int32_t)(((currentInterpolationFraction >> 2) * interpolationDif) >> 14);
+                if (loopBackwardFlag && xfade.covers(iPitchCounter))
+                {
+                    sampleOut = xfade.mix(sampleOut,
+                                          readInterpolatedAtRel(in,
+                                                                iPitchCounter + xfade.across,
+                                                                interpOffset,
+                                                                currentInterpolationFraction),
+                                          xfade.depth(iPitchCounter));
+                }
+                *out++ = sampleOut;
 
                 if (!loopBackwardFlag)
                 {

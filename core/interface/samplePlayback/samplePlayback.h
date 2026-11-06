@@ -263,6 +263,23 @@ class cSamplePlayback : public ModuleBase
 
     float samplePosToTime(uint32_t pos);
 
+    // PNEM: Loop crossfade. In Forward Loop and Backward Loop the six buttons have two pages
+    // (More switches them):
+    //   1: Preview | Start | - | End | Zoom | More
+    //   2: Loop Start | Loop End | Crossfade | - | - | More
+    // selectedPlace stays the parameter (CE's places, and kPlaceCrossfade); the page decides on
+    // which button, frame and label a parameter is.
+    static constexpr uint8_t kPlaceCrossfade = 7;
+    bool loopScreenMode2 = false;
+    bool loopPagesActive() const;
+    int8_t buttonOfPlace(uint8_t place) const; // -1: not on the page shown
+    int8_t placeOfButton(uint8_t button) const; // -1: a blank button
+    hControl labelOfPlace(uint8_t place) const; // -1: not on the page shown
+    void showPlaceValue(uint8_t place, const char* text);
+    void showLoopPage();
+    char crossfadeValueText[9];
+    void showCrossfadeValue();
+
     void formatTimeSeconds(char* destBuffer, size_t destBufferSize, float value);
 };
 

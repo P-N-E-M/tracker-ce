@@ -161,6 +161,14 @@ AUDIO_CORE_RAM audio_block_t* AudioPlayMemory::updateLoopForwardNormal()
         else
             interpolationCondition = 1;
 
+        // PNEM: Loop crossfade: the zone below the loop end, mixed with the frames below the loop
+        // start (down to the sample's first frame)
+        const LoopCrossfadeZone xfade =
+          LoopCrossfadeZone::up(loopCrossfadeFrames(),
+                                loopEndPoint,
+                                (int32_t)constrainsInSamples.loopPoint1,
+                                (int32_t)(pointsInSamples.start + constrainsInSamples.loopPoint1));
+
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
         {
             if ((int32_t)length > iPitchCounter)
@@ -199,8 +207,19 @@ AUDIO_CORE_RAM audio_block_t* AudioPlayMemory::updateLoopForwardNormal()
                 else
                     interpolationDif = (readSampleAtRel(in, iPitchCounter + 1) - currentSampelValue);
 
-                *out++ = currentSampelValue +
-                         (int32_t)(((currentFractionPitchCounter >> 2) * interpolationDif) >> 14);
+                int16_t sampleOut =
+                  currentSampelValue +
+                  (int32_t)(((currentFractionPitchCounter >> 2) * interpolationDif) >> 14);
+                if (xfade.covers(iPitchCounter))
+                {
+                    sampleOut = xfade.mix(sampleOut,
+                                          readInterpolatedAtRel(in,
+                                                                iPitchCounter + xfade.across,
+                                                                1,
+                                                                currentFractionPitchCounter),
+                                          xfade.depth(iPitchCounter));
+                }
+                *out++ = sampleOut;
                 iPitchCounter += castPitchControl;
                 currentFractionPitchCounter += currentFractionPitchControl;
                 if (currentFractionPitchCounter >= MAX_16BIT)
@@ -271,6 +290,15 @@ AUDIO_CORE_RAM audio_block_t* AudioPlayMemory::updateLoopForwardReverse()
         int32_t currentFractionPitchCounter = fPitchCounter * MAX_16BIT;
         int32_t currentFractionPitchControl = pitchFraction * MAX_16BIT;
 
+        // PNEM: Loop crossfade: the zone above the loop start, mixed with the frames above the
+        // loop end (up to the sample's last frame)
+        const LoopCrossfadeZone xfade = LoopCrossfadeZone::down(
+          loopCrossfadeFrames(),
+          loopStartPoint,
+          (int32_t)constrainsInSamples.loopPoint2,
+          (int32_t)currentSampleLength - 1 -
+            (int32_t)(pointsInSamples.start + constrainsInSamples.loopPoint2));
+
         for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
         {
             if (iPitchCounter > 0)
@@ -308,9 +336,19 @@ AUDIO_CORE_RAM audio_block_t* AudioPlayMemory::updateLoopForwardReverse()
                 else
                     interpolationDif = (readSampleAtRel(in, iPitchCounter - 1) - currentSampelValue);
 
-                *out++ =
+                int16_t sampleOut =
                   (int32_t)currentSampelValue +
                   (int32_t)((((-currentFractionPitchCounter) >> 2) * interpolationDif) >> 14);
+                if (xfade.covers(iPitchCounter))
+                {
+                    sampleOut = xfade.mix(sampleOut,
+                                          readInterpolatedAtRel(in,
+                                                                iPitchCounter + xfade.across,
+                                                                -1,
+                                                                -currentFractionPitchCounter),
+                                          xfade.depth(iPitchCounter));
+                }
+                *out++ = sampleOut;
                 iPitchCounter += castPitchControl;
                 currentFractionPitchCounter += currentFractionPitchControl;
 

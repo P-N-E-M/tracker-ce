@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "mtEnvelopeGenerator.h"
+#include <stddef.h>
 #include <stdint.h>
 
 //=====================================================================
@@ -597,6 +598,10 @@ enum SaturationType
 struct strInstrument
 {
     uint8_t isActive;
+    // PNEM: Loop crossfade. These two fields fill padding the struct already had, so the size
+    // and every other offset stay as they were. Old .pti files can have anything in padding:
+    // the value counts only with the tag (see loopCrossfadeMs()).
+    uint8_t loopCrossfadeTag[2];
 
     struct strSampleBankSlot
     {
@@ -622,6 +627,7 @@ struct strInstrument
     uint16_t loopPoint1;
     uint16_t loopPoint2;
     uint16_t endPoint;
+    uint16_t loopCrossfade; // PNEM: Loop crossfade in ms (padding before)
 
     uint32_t wavetableCurrentWindow;
     //    uint16_t wavetableSync;
@@ -707,6 +713,37 @@ struct strInstrument
         return envelope[automationDestToEnvSlot(destIdx)].enable != 0;
     }
 
+    // PNEM: Loop crossfade for Forward Loop and Backward Loop, 0..kLoopCrossfadeMaxMs ms
+    // (0: CE's hard jump at the loop's seam).
+    static constexpr uint16_t kLoopCrossfadeMaxMs = 10000;
+    static constexpr uint8_t kLoopCrossfadeTag0 = 'X';
+    static constexpr uint8_t kLoopCrossfadeTag1 = 'F';
+
+    uint16_t loopCrossfadeMs() const
+    {
+        if (loopCrossfadeTag[0] != kLoopCrossfadeTag0 || loopCrossfadeTag[1] != kLoopCrossfadeTag1 ||
+            loopCrossfade > kLoopCrossfadeMaxMs)
+        {
+            return 0;
+        }
+        return loopCrossfade;
+    }
+
+    void setLoopCrossfadeMs(uint16_t ms)
+    {
+        loopCrossfadeTag[0] = kLoopCrossfadeTag0;
+        loopCrossfadeTag[1] = kLoopCrossfadeTag1;
+        loopCrossfade = ms > kLoopCrossfadeMaxMs ? kLoopCrossfadeMaxMs : ms;
+    }
+
+    // The crossfade in sample frames, in the time the Sample Playback screen shows the points in
+    // (cSamplePlayback::samplePosToTime).
+    uint32_t loopCrossfadeFrames() const
+    {
+        const int32_t divisor = 1 + tuneResample / (-12);
+        return (uint32_t)loopCrossfadeMs() * 441u / 10u / (uint32_t)(divisor > 0 ? divisor : 1);
+    }
+
     void setAutomationDestEnabled(uint8_t destIdx, bool enabled)
     {
         if (destIdx == autoDestWtPos)
@@ -730,10 +767,15 @@ struct strInstrument
     }
 };
 static_assert(sizeof(strInstrument) == 372, "strInstrument size must remain 372 bytes");
+static_assert(offsetof(strInstrument, loopCrossfadeTag) == 1 && offsetof(strInstrument, sample) == 4 &&
+                offsetof(strInstrument, loopCrossfade) == 70 &&
+                offsetof(strInstrument, wavetableCurrentWindow) == 72,
+              "PNEM: the Loop crossfade fields must stay in the padding");
 
 //----------------------------------------------------------------------------------
 const strInstrument defaultInstrumentParams = {
     .isActive = 0,
+    .loopCrossfadeTag = {},
     .sample = { 0, {}, nullptr, 0, 2048, 0 },
     .name = {},
     .playMode = playModeSingleShot,
@@ -741,6 +783,7 @@ const strInstrument defaultInstrumentParams = {
     .loopPoint1 = 1,
     .loopPoint2 = MAX_16BIT - 1,
     .endPoint = MAX_16BIT,
+    .loopCrossfade = 0,
     .wavetableCurrentWindow = 0,
     .envelope = { { 1.0, 0, 10, 0, 0, 1.0, 1000, 0, 1 },
                   { 1.0, 0, 3000, 0, 0, 1.0, 1000, 0, 0 },
