@@ -1,3 +1,51 @@
+# PNEM CE
+
+Unofficial firmware for the **Polyend Tracker+**, built on
+[Polyend's Tracker Community Edition (CE)](https://github.com/polyend/tracker-ce). It adds a
+few workflow features to CE and leaves everything else as CE has it.
+
+PNEM CE is not affiliated with Polyend, and Polyend doesn't support these builds. Please don't
+report problems with them to Polyend; open an issue here instead.
+
+## Status
+
+`main` is CE with the PNEM name: no features yet. Planned, each on its own branch first:
+
+- **Song Loop**: select a block of song positions and loop it while you play over it.
+- **Pads 16**: the Pattern screen's pad preview for all 16 tracks, not only tracks 1-8.
+- More of the same kind will follow.
+
+Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
+features are not checked on them.
+
+## Install
+
+1. **Back up your SD card's `Projects` folder.** CE saves patterns in a newer format that
+   older firmware can't read.
+2. **Build the firmware** (there are no releases yet): `make plus`, as in
+   [Building Firmware](#building-firmware) below, makes `build/TrackerPlus_PNEM_1.0.0.ptf`.
+3. **Flash it** as in
+   [Flashing on Hardware & Emergency Recovery](#4-flashing-on-hardware--emergency-recovery)
+   below. Config then shows the version as `1.0.0 PNEM`.
+
+## Development
+
+- `main` holds CE plus the finished features.
+- Each feature is built on its own branch, `feature/<name>`, and merged into `main` once it
+  has been tested on a Tracker+.
+- CE updates come in by merging `polyend/tracker-ce` `main` into `main`.
+- Fixes that belong in CE itself go to `polyend/tracker-ce` as separate pull requests.
+
+## PNEM CE license
+
+CE's [`LICENSE`](LICENSE) and [`NOTICE.md`](NOTICE.md) apply here, as in [License](#license)
+below. They don't allow selling `.ptf` builds. The closed synth libraries in `synth/lib/`
+have a license of their own.
+
+---
+
+*The rest of this page is CE's own README, unchanged.*
+
 # Polyend Tracker Community Edition (CE)
 
 Welcome to the **Polyend Tracker Community Edition** repository!
