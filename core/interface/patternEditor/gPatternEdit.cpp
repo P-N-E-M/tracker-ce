@@ -1185,13 +1185,16 @@ void cPatternEditor::showMuteButtons(uint8_t state, bool midiTracks)
             char* bottomText = (char*)"";
             auto colors = display.getTheme().inactiveLabelsColors;
 
-            bool showButton = midiTracks ? i < kMidiTracks : true;
+            // PNEM: Align mute keys: the track of this softkey
+            const int trackIdx = pnemSoftkeyTrack(i, midiTracks);
+            bool showButton = trackIdx < kAllTracks;
             if (showButton)
             {
-                int mute =
-                  midiTracks ? mtProject.values.midiTrackMute[i] : mtProject.values.trackMute[i];
-                topText =
-                  midiTracks ? mtProject.values.midiTrackNames[i] : mtProject.values.TrackNames[i];
+                const bool sampleTrack = trackIdx < kSampleTracks;
+                int mute = sampleTrack ? mtProject.values.trackMute[trackIdx]
+                                       : mtProject.values.midiTrackMute[trackIdx - kSampleTracks];
+                topText = sampleTrack ? mtProject.values.TrackNames[trackIdx]
+                                      : mtProject.values.midiTrackNames[trackIdx - kSampleTracks];
                 bottomText = mute ? (char*)"Unmute" : (char*)"Mute";
                 colors = mute ? display.getTheme().inactiveLabelsColors
                               : display.getTheme().activeLabelsColors;
@@ -1222,7 +1225,7 @@ void cPatternEditor::showRecordArmingButtons(uint8_t state, bool midiTracks)
     {
         for (int buttonIdx = 0; buttonIdx < 8; buttonIdx++)
         {
-            int trackIdx = midiTracks ? buttonIdx + 8 : buttonIdx;
+            int trackIdx = pnemSoftkeyTrack(buttonIdx, midiTracks); // PNEM: Align mute keys
 
             display.setControlValue(label[buttonIdx], 1);
             display.setControlStyle(label[buttonIdx],
@@ -1235,7 +1238,7 @@ void cPatternEditor::showRecordArmingButtons(uint8_t state, bool midiTracks)
             char* bottomText = (char*)"";
             auto colors = display.getTheme().inactiveLabelsColors;
 
-            bool showButton = midiTracks ? buttonIdx < kMidiTracks : true;
+            bool showButton = trackIdx < kAllTracks;
             if (showButton)
             {
                 topText = (char*)"Live REC";
