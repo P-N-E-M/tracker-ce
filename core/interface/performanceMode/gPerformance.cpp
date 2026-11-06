@@ -116,6 +116,14 @@ void cPerformanceMode::initDisplayControls()
     }
 }
 
+// PNEM: Performance scenes
+void cPerformanceMode::showSceneTitle()
+{
+    static const char* const titles[4] = { "Performance FX", "Edit scene 1", "Edit scene 2", "Edit scene 3" };
+    const uint8_t scene = performance.sceneEditNumber();
+    titleBar->setTitle(titles[scene < 4 ? scene : 0]);
+}
+
 void cPerformanceMode::showPerformanceFxes()
 {
     titleBar->show();

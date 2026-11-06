@@ -95,6 +95,8 @@ class cPerformEngine
         sourceDataForceSaveFunct = dataSources[source_index].forceSaveFunct;
         slotToActiveCC = dataSources[source_index].isCcSelected;
         slotToCCValue = dataSources[source_index].ccValues;
+        slotExtraBits = dataSources[source_index].trackState; // PNEM: Performance scenes
+        sceneEditSlot = -1;
 
         // wymuszenie poprawnosci danych wejsciowych
         for (uint8_t slot = 0; slot < 12; slot++)
@@ -114,7 +116,38 @@ class cPerformEngine
     void clearCCMode(uint8_t slot);
     void clearCC(uint8_t slot);
 
+    // PNEM: Performance scenes. A column of the scene type turns its pads into Off and three
+    // scenes; a scene holds a position (0: the top pad, off; 1..3) for every other column.
+    // Stored without a new field: 3 scenes x 11 other columns x 2 bits = 66 bits, in the scene
+    // column's own four values (64 bits) and 2 bits of the unused trackState data per column.
+    bool isSceneSlot(uint8_t slot) const;
+    void scenePadPressed(uint8_t slot, uint8_t row); // after CE's own pad press
+    void scenePadReleased(uint8_t slot);             // after CE's own pad release
+    void otherPadPressed(uint8_t slot);              // a press on another column (Rec stores)
+    void sceneEditBegin();                           // Rec on: the scene playing is edited
+    void sceneEditEnd();                             // Rec off
+    uint8_t sceneEditNumber() const;                 // 1..3 while a scene is edited, else 0
+
   private:
+    // PNEM: Performance scenes
+    struct SceneCopy
+    {
+        uint8_t position[3][12];
+    };
+    uint8_t* slotExtraBits = nullptr;
+    int8_t sceneEditSlot = -1;
+    uint8_t sceneEditIdx = 0;
+    bool sceneHeld[12] = {};
+    bool isSceneEligible(uint8_t sceneSlot, uint8_t column) const;
+    uint8_t scenePosition(uint8_t sceneSlot, uint8_t scene, uint8_t column) const;
+    void setScenePosition(uint8_t sceneSlot, uint8_t scene, uint8_t column, uint8_t position);
+    void readScenes(uint8_t slot, SceneCopy& copy) const;
+    void writeScenes(uint8_t slot, const SceneCopy& copy);
+    void clearSceneBits(uint8_t slot);
+    void applyScene(uint8_t sceneSlot, uint8_t row);
+    void storeScene(uint8_t sceneSlot, uint8_t scene);
+    void setSlotRowNow(uint8_t slot, uint8_t row);
+
     friend cPerformFx;
 
     const uint8_t fxCount;
@@ -153,6 +186,7 @@ class cPerformEngine
 extern cPerformEngine performance;
 
 extern const uint8_t performanceDataSourceCount;
+extern const uint8_t performanceSceneFxId; // PNEM: Performance scenes: the scene column's type
 extern strPerformDataSource performanceDataSource[];
 
 #endif /* INTERFACE_PERFORMANCEMODE_PERFORMANCEENGINE_H_ */
