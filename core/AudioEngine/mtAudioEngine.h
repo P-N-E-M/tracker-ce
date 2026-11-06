@@ -130,6 +130,9 @@ class audioEngine
     void refreshSynthParam(SynthParam param);
 
     bool isSynthFx(uint8_t fx_id);
+    // PNEM: Synth Mute (Global Mixer 3/3; not saved)
+    void setSynthMuted(int synthIdx, bool muted);
+    bool isSynthMuted(int synthIdx);
     void seqSynthFx(uint8_t fx_id, uint8_t fx_val, uint8_t fx_n, uint8_t synthIdx);
     void refreshSynthInstrumentParams(SynthPartSettings& synthSettings, int synthIdx);
     float getSynthVoiceRMS(uint8_t channel, int synthIdx);

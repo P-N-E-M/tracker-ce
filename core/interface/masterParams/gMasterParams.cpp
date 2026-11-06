@@ -4,6 +4,8 @@
 #include "Synth.h"
 #endif
 #include "util_math.h"
+#include "fileManager.h"   // PNEM: Synth Mute
+#include "mtAudioEngine.h" // PNEM: Synth Mute
 #include <cmath>
 #include <masterParams/masterParams.h>
 
@@ -1463,7 +1465,10 @@ void cMasterParams::showMixerDelayReverbScreen()
 #ifdef FEATURE_SYNTH
             else if (i >= synthVolumeScreenPositionStart && i <= synthVolumeScreenPositionEnd)
             {
-                sprintf(mixerLabel[i], mixerLabelFormat, " ");
+                // PNEM: Synth Mute
+                sprintf(mixerLabel[i],
+                        mixerLabelFormat,
+                        synthSolo == i - synthVolumeScreenPositionStart ? unsoloText : soloText);
             }
 #endif
         }
@@ -1502,7 +1507,10 @@ void cMasterParams::showMixerDelayReverbScreen()
 #ifdef FEATURE_SYNTH
             else if (i >= synthVolumeScreenPositionStart && i <= synthVolumeScreenPositionEnd)
             {
-                sprintf(mixerLabel[i], mixerLabelFormat, " ");
+                // PNEM: Synth Mute
+                sprintf(mixerLabel[i],
+                        mixerLabelFormat,
+                        engine.isSynthMuted(i - synthVolumeScreenPositionStart) ? unmuteText : muteText);
             }
 #endif
         }
@@ -1547,13 +1555,12 @@ void cMasterParams::showMixerDelayReverbScreen()
         {
             int synthIdx = labelIdx - synthVolumeScreenPositionStart;
 
-            snprintf(&synthVoiceLabel[synthIdx][0],
-                     sizeof(synthVoiceLabel[synthIdx]),
-                     "Synth %d",
-                     synthIdx + 1);
+            makeSynthHeader(synthIdx); // PNEM: Synth Mute: the model, not "Synth n"
 
             display.setControlText(trackNameLabel[labelIdx], &synthVoiceLabel[synthIdx][0]);
-            display.setControlColors(label[labelIdx], display.getTheme().activeLabelsColors);
+            display.setControlColors(label[labelIdx],
+                                     isSynthGrey(synthIdx) ? display.getTheme().inactiveLabelsColors
+                                                           : display.getTheme().activeLabelsColors);
 
             showSynthGain(synthIdx);
         }
@@ -1697,6 +1704,13 @@ void cMasterParams::showLevelBar(uint8_t n, strTrackLevel* level)
             if (mtProject.values.lineInMute)
                 barData[n].value = display.getTheme().grey_22;
         }
+#ifdef FEATURE_SYNTH
+        else if (n >= 8 && n < 8 + kSynthParts) // PNEM: Synth Mute: the synths' meters
+        {
+            if (isSynthGrey(n - 8))
+                barData[n].value = display.getTheme().grey_22;
+        }
+#endif
     }
     else
     {
@@ -1837,6 +1851,38 @@ void cMasterParams::showLineInVolumeBar()
 }
 
 #ifdef FEATURE_SYNTH
+// PNEM: Synth Mute: a synth is grey when muted, or when its slot has no voices (silent)
+bool cMasterParams::isSynthGrey(int synthIdx)
+{
+    return engine.isSynthMuted(synthIdx) ||
+           newFileManager.getSynth()->getSynthName(synthIdx).ends_with("(Off)");
+}
+
+// PNEM: Synth Mute: the header shows the slot's model ("Synth 2 (ACD)" -> "ACD"), with the slot
+// number when another slot has the same model ("ACD 2"), or "Off"
+void cMasterParams::makeSynthHeader(int synthIdx)
+{
+    auto model = [](int idx) {
+        std::string name = newFileManager.getSynth()->getSynthName(idx);
+        const size_t open = name.find('(');
+        const size_t close = name.rfind(')');
+        return (open != std::string::npos && close != std::string::npos && close > open)
+                 ? name.substr(open + 1, close - open - 1)
+                 : name;
+    };
+    const std::string own = model(synthIdx);
+    bool shared = false;
+    for (int idx = 0; idx < kSynthParts && own != "Off"; idx++)
+    {
+        if (idx != synthIdx && model(idx) == own)
+            shared = true;
+    }
+    if (shared)
+        snprintf(synthVoiceLabel[synthIdx], sizeof(synthVoiceLabel[synthIdx]), "%s %d", own.c_str(), synthIdx + 1);
+    else
+        snprintf(synthVoiceLabel[synthIdx], sizeof(synthVoiceLabel[synthIdx]), "%s", own.c_str());
+}
+
 void cMasterParams::showSynthGain(int synthIdx)
 {
     float value = mtProject.values.synthPart[synthIdx].gainDb;
@@ -1848,6 +1894,9 @@ void cMasterParams::showSynthGain(int synthIdx)
     display.refreshControl(label[position]);
 
     display.setControlShow(trackVolumeBar[position]);
+    display.setControlColors(trackVolumeBar[position], // PNEM: Synth Mute
+                             isSynthGrey(synthIdx) ? display.getTheme().inactiveBarColors
+                                                   : display.getTheme().activeBarColors);
     display.setControlValue(trackVolumeBar[position],
                             map<int>(value, Synth::kGainSilence, Synth::kGainMax, 0, 100));
     display.refreshControl(trackVolumeBar[position]);

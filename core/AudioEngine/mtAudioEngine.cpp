@@ -1292,6 +1292,17 @@ AUDIO_CORE_RAM void audioEngine::setSynthPanning(int synthIdx, float value)
     synthVoice.getPanningAmplifier(synthIdx, SynthVoice::Channels::kRight)->gain(gainR);
 }
 
+// PNEM: Synth Mute
+void audioEngine::setSynthMuted(int synthIdx, bool muted)
+{
+    synthVoice.getPolySynth()->setMuted(synthIdx, muted);
+}
+
+bool audioEngine::isSynthMuted(int synthIdx)
+{
+    return synthVoice.getPolySynth()->isMuted(synthIdx);
+}
+
 AUDIO_CORE_RAM void audioEngine::setSynthGain(int synthIdx, float value)
 {
     synthVoice.getPolySynth()->setGain(synthIdx, value);

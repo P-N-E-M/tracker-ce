@@ -212,6 +212,13 @@ class cMasterParams : public ModuleBase
     bool ignoreMuteReleaseLineIn;
 #ifdef FEATURE_SYNTH
     bool synthGainIsEdited[kSynthParts];
+    // PNEM: Synth Mute: a release toggles the mute (Shift: solo) unless the gain changed while
+    // the button was held; synthSolo: the soloed synth, or -1
+    bool ignoreMuteReleaseSynth[kSynthParts] = {};
+    int8_t synthSolo = -1;
+    void toggleSynthMute(int synthIdx);
+    bool isSynthGrey(int synthIdx); // muted, or without voices
+    void makeSynthHeader(int synthIdx);
 #endif
 
     // menu
