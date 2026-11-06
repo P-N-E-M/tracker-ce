@@ -16,6 +16,7 @@ report problems with them to Polyend; open an issue here instead.
 
 - **Song Loop**: done, tested on a Tracker+.
 - **Loop Crossfade**: done, tested on a Tracker+.
+- **X FX (tempo multiplier)**: done, tested on a Tracker+.
 - **Pads 16**: planned. The Pattern screen's pad preview for all 16 tracks, not only tracks 1-8.
 - More of the same kind will follow.
 
@@ -48,6 +49,25 @@ done. In the Song screen's pattern list (the Pattern column):
 - Performance mode stays on for the whole block, as it does for one pattern with Loop
   Performance.
 - Stop ends the loop. Nothing is saved in the project.
+
+### X FX: tempo multiplier
+
+A new FX, **X - Tempo multiplier**, with the values **1/8, 1/4, 1/2, 1, 2, 4, 8**. An X on a
+step plays the pattern from that step on at that multiple of the project tempo.
+
+- **It holds** like the Tempo FX: until the next X, the next pattern (song mode, a queued
+  pattern) or stop. A looping pattern keeps it; put an X 1 on the first step to start every
+  pass at the tempo. A new pattern starts with the X on its first step (any track), also for
+  tracks that play it backwards or at random in Performance.
+- **Everything the sequencer counts in micro-steps** scales with it: rolls, arps, gate,
+  micro-moves. Notes on any track can carry the X.
+- **MIDI clock out stays at the project tempo**, so other gear keeps its pace. With an
+  external clock, X works the same way on the received pulses.
+- **In the FX list** it sits after T - Tempo (FX + the 8th pad); the FX from Swing on move
+  one place down. The grid shows `X` and the value.
+- Uses: fast rolls and ratchet-like runs at X 2..8, a half-speed section at X 1/2 to fit a
+  longer phrase into a pattern, a pattern that slows down at its end.
+- A project with X plays on CE as if the X weren't there.
 
 ### Loop Crossfade
 

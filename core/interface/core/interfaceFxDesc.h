@@ -41,6 +41,13 @@ const char* const fxDescriptions[FX_COUNT] = {
     "From 10 BPM to 400 BPM.\n"
     "Also includes TSTP value which stops the playback. TSTP value is excluded when Tempo FX is "
     "used in combination with Random FX Value (f).",
+    // PNEM: X - Tempo multiplier
+    "Destination: Pattern"
+    "\n\n"
+    "Plays the pattern from this step on at a multiple of the tempo, until the next X, the next "
+    "pattern or stop. MIDI clock out stays at the project tempo."
+    "\n\n"
+    "1/8, 1/4, 1/2, 1, 2, 4 or 8.",
     // Sequencer::strFxConsts::enFxType::FX_TYPE_SWING,
     "Destination: Pattern"
     "\n\n"
@@ -350,6 +357,13 @@ const char* const fxDescriptions[FX_COUNT] = {
     "From 10 BPM to 400 BPM.\n"
     "Also includes TSTP value which stops the playback. TSTP value is excluded when Tempo FX is "
     "used in combination with Random FX Value (f).",
+    // PNEM: X - Tempo multiplier
+    "Destination: Pattern"
+    "\n\n"
+    "Plays the pattern from this step on at a multiple of the tempo, until the next X, the next "
+    "pattern or stop. MIDI clock out stays at the project tempo."
+    "\n\n"
+    "1/8, 1/4, 1/2, 1, 2, 4 or 8.",
     // Sequencer::strFxConsts::enFxType::FX_TYPE_SWING,
     "Destination: Pattern"
     "\n\n"
