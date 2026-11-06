@@ -269,7 +269,7 @@ void cMasterParams::showMasterScreen()
     }
 
     titleBar->show();
-    titleBar->setTitle("Master 1/3");
+    titleBar->setTitle("Master 1/4"); // PNEM: MIDI Mixer: four pages
 
     display.setControlText(label[0], "Volume");
     display.setControlText(label[1], "Reverb");
@@ -1359,9 +1359,9 @@ void cMasterParams::showMixerScreen()
 
     titleBar->show();
 #ifdef FEATURE_SYNTH
-    titleBar->setTitle("Sample Track Mixer 2/3");
+    titleBar->setTitle("Sample Track Mixer 2/4");
 #else
-    titleBar->setTitle("Track Mixer 2/3");
+    titleBar->setTitle("Track Mixer 2/4");
 #endif
 
     if (isSolo)
@@ -1427,7 +1427,7 @@ void cMasterParams::showMixerDelayReverbScreen()
     display.setControlHide(saturationList);
 
     titleBar->show();
-    titleBar->setTitle("Global Mixer 3/3");
+    titleBar->setTitle("Global Mixer 4/4");
 
     char* mixerLabelFormat = (char*)"%s";
 
@@ -1711,6 +1711,11 @@ void cMasterParams::showLevelBar(uint8_t n, strTrackLevel* level)
                 barData[n].value = display.getTheme().grey_22;
         }
 #endif
+    }
+    else if (displayType == displayMode::midiMixer) // PNEM: MIDI Mixer
+    {
+        if (n < 8 && mtProject.values.midiTrackMute[n])
+            barData[n].value = display.getTheme().grey_22;
     }
     else
     {
@@ -2096,3 +2101,81 @@ void cMasterParams::hideControlUnderMenu()
         display.setControlHide(blankSpaceCover[2]);
     }
 }
+
+//==================================================================================================
+// PNEM: MIDI Mixer: MIDI Track Mixer 3/4, laid out as the Sample Track Mixer
+
+void cMasterParams::showMidiTrackLevel(uint8_t n)
+{
+    const uint8_t level = sequencer.midiTrackLevel[n];
+    snprintf(midiLevelLabel[n], sizeof(midiLevelLabel[n]), "%d", level);
+
+    display.setControlShow(trackVolumeBar[n]);
+    display.setControlColors(trackVolumeBar[n],
+                             mtProject.values.midiTrackMute[n] ? display.getTheme().inactiveBarColors
+                                                               : display.getTheme().activeBarColors);
+    display.setControlValue(trackVolumeBar[n], map<int>(level, 0, 127, 0, 100));
+    display.setControlText(label[n], midiLevelLabel[n]);
+
+    display.refreshControl(label[n]);
+    display.refreshControl(trackVolumeBar[n]);
+    display.synchronizeRefresh();
+}
+
+void cMasterParams::showMidiMixerScreen()
+{
+    display.setControlHide(delayPingpongEnableList);
+    display.setControlHide(delaySyncEnableList);
+    display.setControlHide(delaySyncRateList);
+    display.setControlHide(limiterSidechainList);
+    display.setControlHide(saturationList);
+
+    titleBar->show();
+    titleBar->setTitle("MIDI Track Mixer 3/4");
+
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        if (isSolo)
+            sprintf(mixerLabel[i], "%s", soloTrack == kMidiSoloBase + i ? "Unsolo" : "Solo");
+        else
+            sprintf(mixerLabel[i], "%s", mtProject.values.midiTrackMute[i] ? "Unmute" : "Mute");
+
+        // the track's name as the Pattern screen shows it, at most 7 characters, or "Midi n"
+        const char* name = mtProject.values.midiTrackNames[i];
+        if (name[0] != 0)
+            snprintf(midiNameLabel[i], 8, "%s", name);
+        else
+            snprintf(midiNameLabel[i], sizeof(midiNameLabel[i]), "Midi %d", kSampleTracks + i + 1);
+
+        showLevelBar(i, &midiLevel[i]);
+        showMidiTrackLevel(i);
+
+        display.setControlText(trackNameLabel[i], midiNameLabel[i]);
+        display.setControlShow(trackNameLabel[i]);
+        display.refreshControl(trackNameLabel[i]);
+
+        display.setControlValue(label[i], 1);
+        display.setControlColors(label[i],
+                                 mtProject.values.midiTrackMute[i] ? display.getTheme().inactiveLabelsColors
+                                                                   : display.getTheme().activeLabelsColors);
+        display.setControlText2(label[i], mixerLabel[i]);
+        display.refreshControl(label[i]);
+    }
+
+    display.refreshControl(bgLabel);
+    display.setControlValue(bgLabel, 255);
+
+    display.setControlHide(frameControl);
+    display.refreshControl(frameControl);
+
+    resizeBarControl(displayMode::mixer);
+
+    display.setControlHide(blankSpaceCover[0]);
+    display.setControlHide(blankSpaceCover[1]);
+    display.setControlHide(blankSpaceCover[2]);
+
+    display.synchronizeRefresh();
+
+    lightUpPadBoard();
+}
+

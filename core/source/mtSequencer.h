@@ -766,6 +766,14 @@ class Sequencer
 
     void setSynthMute(MuteState muteState);
 
+    // PNEM: MIDI Mixer (Master 3/4). A level per MIDI track (tracks 9-16, 0..127, not saved)
+    // scales the velocity of the notes the sequencer plays on it; midiMeterPeak holds the
+    // loudest note since the mixer last read it.
+    static_assert(kMidiTracks == 8);
+    uint8_t midiTrackLevel[kMidiTracks] = { 127, 127, 127, 127, 127, 127, 127, 127 };
+    volatile uint8_t midiMeterPeak[kMidiTracks] = {};
+    int applyMidiTrackLevel(uint8_t track, int velocity);
+
     void sequencialSwitch_changeNextPattern(int8_t delta);
     void sequencialSwitch_SetReady();
     void sequencialSwitch_SetReadyNow();
