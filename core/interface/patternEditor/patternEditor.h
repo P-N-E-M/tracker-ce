@@ -347,6 +347,12 @@ class cPatternEditor : public ModuleBase
     void setPatternViewMode(uint8_t param);
     void changePatternViewMode(uint8_t param);
 
+    // PNEM: 8 track view (Config > General): the Pattern screen opens with 8 tracks after a start
+    // of the Tracker, and a plain tap on Pattern switches between that and the 4-track view
+    static constexpr uint8_t kPnemEightTrackColumns = 0b0011; // Note and Instr
+    bool pnemViewDefaultSet = false;
+    void pnemTogglePatternView();
+
     //--------------------------------------------------------
     // powiekszona funkcjolanosc przyciskow pod ekranem - 2 strony
     const uint8_t actionButtonsPagesCount = 3;

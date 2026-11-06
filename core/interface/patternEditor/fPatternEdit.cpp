@@ -1,4 +1,5 @@
 #include "mtStructs.h"
+#include "pnemOptions.h" // PNEM
 #include "patternEditor/patternEditor.h"
 #include <assert.h>
 #include <limits.h>
@@ -310,6 +311,18 @@ void cPatternEditor::start(uint32_t options)
 
     moduleRefresh = 1;
     patternButtonReleaseActive = 0;
+
+    // PNEM: 8 track view: the first time after a start of the Tracker, 8 tracks
+    if (!pnemViewDefaultSet)
+    {
+        pnemViewDefaultSet = true;
+        if (pnem::option(pnem::kEightTrackView))
+        {
+            patternViewMode = kPnemEightTrackColumns;
+            focusOnActual();
+            display.setControlValue(patternControl, patternViewMode);
+        }
+    }
 
     undoRedoButtonReleaseBlocker = 1;
 
@@ -2853,7 +2866,12 @@ static void functPattern(uint8_t state)
     }
     else if (state == buttonRelease && PTE->patternButtonReleaseActive)
     {
-        PTE->setPatternViewMode(0);
+        // PNEM: 8 track view: a plain tap switches between 8 tracks (Note + Instr) and 4; after a
+        // column choice (Pattern + Note ...) the release keeps it, as in CE
+        if (pnem::option(pnem::kEightTrackView) && PTE->patternViewChanged == 0)
+            PTE->pnemTogglePatternView();
+        else
+            PTE->setPatternViewMode(0);
         if (sequencer.sequencialSwitch_GetNext() > 0)
         {
             sequencer.sequencialSwitch_SetReady();
@@ -5050,6 +5068,17 @@ void cPatternEditor::setPatternViewMode(uint8_t param)
     PTE->focusOnActual();
     display.setControlValue(PTE->patternControl, PTE->patternViewMode);
     display.refreshControl(PTE->patternControl);
+}
+
+// PNEM: 8 track view
+void cPatternEditor::pnemTogglePatternView()
+{
+    patternViewMode = patternViewMode == 0 ? kPnemEightTrackColumns : 0;
+    selectedParams[0] = 0;
+    selectedParams[1] = 0;
+    focusOnActual();
+    display.setControlValue(patternControl, patternViewMode);
+    display.refreshControl(patternControl);
 }
 
 void cPatternEditor::changePatternViewMode(uint8_t param)

@@ -1,4 +1,5 @@
 #include "configEditor/configMenu.h"
+#include "pnemOptions.h" // PNEM
 #include "configEditor/configEditor.h"
 
 #include "configEditor/configMenuActions.h"
@@ -20,15 +21,15 @@
 #ifdef TRACKER_MINI
 constexpr uint8_t baseMenuGroupCount = 8;
 constexpr uint8_t projectMenuGroupCount = 10;
-constexpr uint8_t generalMenuGroupCount = 9;
+constexpr uint8_t generalMenuGroupCount = 9 + 3; // PNEM: + the three Pattern options
 #elif defined(PLATFORM_IMX)
 constexpr uint8_t baseMenuGroupCount = 7;
 constexpr uint8_t projectMenuGroupCount = 10;
-constexpr uint8_t generalMenuGroupCount = 12;
+constexpr uint8_t generalMenuGroupCount = 12 + 3; // PNEM: + the three Pattern options
 #else
 constexpr uint8_t baseMenuGroupCount = 6;
 constexpr uint8_t projectMenuGroupCount = 10;
-constexpr uint8_t generalMenuGroupCount = 12;
+constexpr uint8_t generalMenuGroupCount = 12 + 3; // PNEM: + the three Pattern options
 #endif
 
 // baza baz
@@ -171,6 +172,25 @@ cMenuItem melLinInOutType(menuGeneral,
                           lineInChannelDesc,
                           menuTypeItemListTextWithAction,
                           &setupLineInOutType);
+
+// PNEM: options for this fork's Pattern features (pnemOptions.h)
+const char pnemEightTrackViewDesc[] = { "On: the Pattern screen opens with 8 tracks (Note and Instr "
+                                        "columns), and a tap on Pattern switches between that and the "
+                                        "4-track view. Off: as CE." };
+const char pnemTrackWrapDesc[] = { "On: Left on the first track goes to the last one, Right on the last "
+                                   "track to the first. Shift + arrows (selections) are as in CE." };
+const char pnemAlignMuteKeysDesc[] = { "On: Shift + a button below the screen mutes (Shift + Rec: arms) "
+                                       "the tracks on screen; the last track on screen is always the "
+                                       "last button. Off: tracks 1-8 or 9-16, as in CE." };
+const strItemTypeListTextWithAction setupPnemEightTrackView{ &pnem::optionMenuValue[pnem::kEightTrackView], 2, onOffStateTexts, pnem::optionChanged };
+const strItemTypeListTextWithAction setupPnemTrackWrap{ &pnem::optionMenuValue[pnem::kTrackWrap], 2, onOffStateTexts, pnem::optionChanged };
+const strItemTypeListTextWithAction setupPnemAlignMuteKeys{ &pnem::optionMenuValue[pnem::kAlignMuteKeys], 2, onOffStateTexts, pnem::optionChanged };
+cMenuItem melPnemEightTrackView(menuGeneral, "8 track view", pnemEightTrackViewDesc,
+                                menuTypeItemListTextWithAction, &setupPnemEightTrackView);
+cMenuItem melPnemTrackWrap(menuGeneral, "Track wrap", pnemTrackWrapDesc,
+                           menuTypeItemListTextWithAction, &setupPnemTrackWrap);
+cMenuItem melPnemAlignMuteKeys(menuGeneral, "Align mute keys", pnemAlignMuteKeysDesc,
+                               menuTypeItemListTextWithAction, &setupPnemAlignMuteKeys);
 
 //==================================================================================================================================================================
 // Metroneome

@@ -1,4 +1,5 @@
 #include <string.h>
+#include "pnemOptions.h"
 
 #include "ConfigManager.h"
 #include "Platform.h"
@@ -474,6 +475,8 @@ void checkConfig()
     if (mtConfig.common.usbAudioMode >= 4)
         mtConfig.common.usbAudioMode = 0;
 
+    pnem::optionsFromConfig(); // PNEM: options in Config > General
+
     // TODO dodac zapis spowrotem do configu jesli np przy sprawdzaniu wazne dane sie nie zgadzały
     // TODO
     // TODO
@@ -558,6 +561,7 @@ void resetConfig()
     mtConfig.general.lineInOutType = 0;
     mtConfig.general.previewVolume = PREVIEW_VOLUME_DEFAULT;
     mtConfig.general.recThreshold = recThreshold_default;
+    mtConfig.general.pnemOptionsOff = 0; // PNEM: options in Config > General, all on
 
     // interface ----------------------------------------
     mtConfig.interface.fxPopupDescription = 0;
