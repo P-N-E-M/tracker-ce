@@ -4,19 +4,49 @@ Unofficial firmware for the **Polyend Tracker+**, built on
 [Polyend's Tracker Community Edition (CE)](https://github.com/polyend/tracker-ce). It adds a
 few workflow features to CE and leaves everything else as CE has it.
 
+PNEM CE is one musician's Tracker: features I find handy, built for my own use and released
+as-is. Take whatever inspires you. The features try to stay in the spirit of the original
+Tracker; if one of them belongs in CE itself, it can go to `polyend/tracker-ce` as a pull
+request.
+
 PNEM CE is not affiliated with Polyend, and Polyend doesn't support these builds. Please don't
 report problems with them to Polyend; open an issue here instead.
 
 ## Status
 
-`main` is CE with the PNEM name: no features yet. Planned, each on its own branch first:
-
-- **Song Loop**: select a block of song positions and loop it while you play over it.
-- **Pads 16**: the Pattern screen's pad preview for all 16 tracks, not only tracks 1-8.
+- **Song Loop**: done, tested on a Tracker+.
+- **Pads 16**: planned. The Pattern screen's pad preview for all 16 tracks, not only tracks 1-8.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
-features are not checked on them.
+features are not checked on them, and releases are for the Tracker+ only.
+
+## Features
+
+### Song Loop
+
+Loop a block of song positions while you play over it, and go on with the song when you're
+done. In the Song screen's pattern list (the Pattern column):
+
+- **Select a block:** Shift + Down selects downwards from the cursor; Shift + Up takes the
+  bottom back. A frame goes round the block. Down or Up without Shift drops it.
+- **Play Selection** (the left button, with two or more positions selected): from stop, the
+  song plays from the block's first position and repeats the block. While the song plays,
+  it goes on to the block (title bar `|:`) or jumps back to it at the pattern end, and then
+  repeats it. While it loops, the title bar and the list show `|: :|`.
+- **During the loop:** Up/Down and the jog wheel move the whole block, Shift + Up/Down
+  resize it. The next pattern follows the block.
+- **Continue Song** (the left button during the loop): the block plays out, then the song
+  goes on.
+- **Play Song** with a block selected plays the song from the block's first position and
+  drops the block.
+- While a block is selected or loops, Add Slot, Delete Slot and << Pattern >> are greyed
+  out, so the song can't change under it. Undo still works, and so do Delete, Copy and Paste
+  in the song grid; the grid's own selection (with Rec) leaves the block alone, and the
+  block's frame turns grey while the cursor is there.
+- Performance mode stays on for the whole block, as it does for one pattern with Loop
+  Performance.
+- Stop ends the loop. Nothing is saved in the project.
 
 ## Install
 
@@ -27,6 +57,9 @@ features are not checked on them.
 3. **Flash it** as in
    [Flashing on Hardware & Emergency Recovery](#4-flashing-on-hardware--emergency-recovery)
    below. Config then shows the version as `1.0.0 PNEM`.
+
+Releases are named `PNEMv1`, `PNEMv2` and so on: Config shows `1.0.0 PNEMv1`, where `1.0.0`
+is the CE version it is built on.
 
 ## Development
 

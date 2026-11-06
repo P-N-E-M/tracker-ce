@@ -7,6 +7,7 @@
 #include "Themes.h"
 #include "TrackerImpl.h"
 #include "display.h"
+#include "songLoop.h"
 #include "elapsedMillis.h"
 
 #include "polyassert.h"
@@ -237,6 +238,11 @@ void cDisplay::loadFont(const CompressedFontData* fontsData, uint8_t fontCount)
     for (uint8_t i = 0; i < fontCount; i++)
     {
         uint8_t* decompressedFontData = decompressFont(&fontsData[i]);
+        // Song Loop: the repeat signs in the bold font
+        if (i == songloop::kSignFontIndex)
+        {
+            songloop::patchFont(decompressedFontData);
+        }
 
         char_num = 0;
         for (int cha = 0; cha < 128; cha++)
@@ -1314,6 +1320,11 @@ bool cDisplay::loadCustomFontFromSD(FileSystem* fs, const char* fontFilePath)
         {
             fs->closeFile(file);
             return false;
+        }
+        // Song Loop: the repeat signs in the bold font (a font from the card too)
+        if (i == songloop::kSignFontIndex)
+        {
+            songloop::patchFont(decompressedFontsCommonBuffer);
         }
 
         uint16_t char_num = 0;

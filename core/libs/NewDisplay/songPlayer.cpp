@@ -2,6 +2,7 @@
 #include "display.h"
 #include "displayControls.h"
 #include "songPlayerControl.h"
+#include "songLoop.h"
 #include <algorithm>
 #include <string.h>
 
@@ -214,6 +215,36 @@ void cSongPlayer::update3()
     drawProgressLine();
 }
 
+// Song Loop
+// The cursor's frame (top, bottom) becomes one frame over the rows of the block selected in
+// the list, clipped to the list; a block out of view leaves the cursor's frame. The rows are
+// where the list draws the text (textOffset: its scroll animation), so the frame doesn't
+// follow the cursor's own animation. True if it frames the block.
+static bool songloopListFrame(uint16_t textListPos,
+                              int16_t textOffset,
+                              int16_t rowHeight,
+                              int16_t listTop,
+                              int16_t listBottom,
+                              int16_t* top,
+                              int16_t* bottom)
+{
+    uint8_t first = 0;
+    uint8_t last = 0;
+    if (!songloop::listFrame(&first, &last))
+    {
+        return false;
+    }
+    const int blockTop = listTop + (first - static_cast<int>(textListPos)) * rowHeight + textOffset;
+    const int blockBottom = blockTop + (last - first + 1) * rowHeight;
+    if (blockBottom <= listTop || blockTop >= listBottom)
+    {
+        return false;
+    }
+    *top = static_cast<int16_t>(std::max<int>(blockTop, listTop));
+    *bottom = static_cast<int16_t>(std::min<int>(blockBottom, listBottom));
+    return true;
+}
+
 void cSongPlayer::showList()
 {
     if (list == nullptr)
@@ -269,13 +300,22 @@ void cSongPlayer::showList()
                 API_COLOR(colors[9]);
             }
 
+            int16_t frameTop = y_pos;
+            int16_t frameBottom = y_pos + h_row;
+            // Song Loop: the block selected in the list, one frame over its rows
+            if (songloopListFrame(textListPos, 0, h_row, posY, posY + h_row * list->linesCount,
+                                  &frameTop, &frameBottom) &&
+                controlData->isListActive == 0)
+            {
+                API_COLOR(colors[2]); // grey while the cursor is in the song grid
+            }
             API_LINE_WIDTH(kRedFrameWidth);
             API_BEGIN(LINE_STRIP);
-            API_VERTEX2F(x_pos, y_pos);
-            API_VERTEX2F(x_pos + w_bar, y_pos);
-            API_VERTEX2F(x_pos + w_bar, y_pos + h_row);
-            API_VERTEX2F(x_pos, y_pos + h_row);
-            API_VERTEX2F(x_pos, y_pos);
+            API_VERTEX2F(x_pos, frameTop);
+            API_VERTEX2F(x_pos + w_bar, frameTop);
+            API_VERTEX2F(x_pos + w_bar, frameBottom);
+            API_VERTEX2F(x_pos, frameBottom);
+            API_VERTEX2F(x_pos, frameTop);
             API_END();
         }
 
@@ -438,13 +478,22 @@ void cSongPlayer::showList()
                 API_COLOR(colors[9]);
             }
 
+            int16_t frameTop = y_pos;
+            int16_t frameBottom = y_pos + h_row;
+            // Song Loop: the block selected in the list, one frame over its rows
+            if (songloopListFrame(textListPos, static_cast<int16_t>(mode ? -listAnimationStep : 0), h_row, posY, posY + h_row * list->linesCount,
+                                  &frameTop, &frameBottom) &&
+                controlData->isListActive == 0)
+            {
+                API_COLOR(colors[2]); // grey while the cursor is in the song grid
+            }
             API_LINE_WIDTH(kRedFrameWidth);
             API_BEGIN(LINE_STRIP);
-            API_VERTEX2F(x_pos, y_pos);
-            API_VERTEX2F(x_pos + w_bar, y_pos);
-            API_VERTEX2F(x_pos + w_bar, y_pos + h_row);
-            API_VERTEX2F(x_pos, y_pos + h_row);
-            API_VERTEX2F(x_pos, y_pos);
+            API_VERTEX2F(x_pos, frameTop);
+            API_VERTEX2F(x_pos + w_bar, frameTop);
+            API_VERTEX2F(x_pos + w_bar, frameBottom);
+            API_VERTEX2F(x_pos, frameBottom);
+            API_VERTEX2F(x_pos, frameTop);
             API_END();
         }
 
@@ -601,6 +650,16 @@ void cSongPlayer::drawIcon(int pos, int row, int x, int y, int h)
         if ((list->icon.iconPositionInList) == pos)
         {
             uint8_t idx = list->icon.iconNum;
+            // Song Loop: the repeat signs, two glyphs of the 17 px bold font
+            if (idx == songloop::kListIcon || idx == songloop::kArmedListIcon)
+            {
+                // |: :| fills columns 8..27 of the pair, where CE's 20 px icon is; |: (13..19)
+                // sits in its middle
+                const bool loop = idx == songloop::kListIcon;
+                API_CMD_TEXT(loop ? x - 8 : x - 6, y + row * h - 11, fonts[songloop::kSignFontIndex].handle, 0,
+                             loop ? songloop::kLoopSign : songloop::kArmedSign);
+                return;
+            }
 
             API_BITMAP_SOURCE(bitmaps[idx].address);
             API_BITMAP_LAYOUT(bitmaps[idx].format, bitmaps[idx].linestride, bitmaps[idx].height);
