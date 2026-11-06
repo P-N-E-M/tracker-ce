@@ -4374,8 +4374,9 @@ void cPatternEditor::lightUpPadBoard()
         Sequencer::strPattern* seq = sequencer.getPatternToUI();
         bool patternMode = (mtConfig.general.padPreviewInPatternEdit == padPreviewModePattern);
 
+        // PNEM: Pads 16: Pattern mode shows the notes of all 16 tracks (CE: tracks 1-8)
         for (int track = patternMode ? 0 : trackerPattern.actualTrack;
-             track < (patternMode ? Sequencer::TRACKS : trackerPattern.actualTrack + 1);
+             track < (patternMode ? kAllTracks : trackerPattern.actualTrack + 1);
              track++)
         {
             int8_t show_note = seq->track[track].step[trackerPattern.actualStep].note;

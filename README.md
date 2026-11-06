@@ -20,7 +20,7 @@ report problems with them to Polyend; open an issue here instead.
 - **Performance Scenes**: done, tested on a Tracker+.
 - **Synth Mute**: done, tested on a Tracker+.
 - **MIDI Mixer**: done, tested on a Tracker+.
-- **Pads 16**: planned. The Pattern screen's pad preview for all 16 tracks, not only tracks 1-8.
+- **Pads 16**: done, tested on a Tracker+.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
@@ -52,6 +52,11 @@ done. In the Song screen's pattern list (the Pattern column):
 - Performance mode stays on for the whole block, as it does for one pattern with Loop
   Performance.
 - Stop ends the loop. Nothing is saved in the project.
+
+### Pads 16
+
+With Config > General > Pads preview set to **Pattern**, the pads show the notes of all 16 tracks,
+the MIDI tracks too (CE: tracks 1-8).
 
 ### MIDI Mixer
 
