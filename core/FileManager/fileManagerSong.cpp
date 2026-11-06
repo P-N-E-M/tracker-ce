@@ -1,5 +1,6 @@
 #include "fileManagerDefs.h"
 #include "mtStructs.h"
+#include "songLoop.h"
 
 #include "core/interfacePopups.h"
 
@@ -15,6 +16,12 @@ void setPatternBitmask(int patternIdx, int trackIdx, bool value);
 AUDIO_CORE_RAM uint8_t cFileManager::getNextSongPattern()
 {
     strSong* song = &mtProject.song;
+    // Song Loop: the block's next pattern; runs in the audio interrupt
+    int16_t pattern = songloop::nextPattern({ song->playlist, &song->playlistPos });
+    if (pattern >= 0)
+    {
+        return pattern;
+    }
     return song->playlist[song->playlistPos + 1] > 0 ? song->playlist[song->playlistPos + 1]
                                                      : song->playlist[0];
 }
@@ -44,12 +51,20 @@ std::optional<int> cFileManager::getPatternPosInSong(uint8_t patternToSearch)
 void cFileManager::setSongPos(uint8_t pos)
 {
     strSong* song = &mtProject.song;
+    // Song Loop: a new position, so a preload decision is stale
+    songloop::songPositionSet();
     song->playlistPos = pos;
 }
 
 bool cFileManager::switchNextPatternInSong()
 {
     strSong* song = &mtProject.song;
+    // Song Loop: the position the preload chose; runs in the audio interrupt
+    int8_t switched = songloop::switchNext({ song->playlist, &song->playlistPos });
+    if (switched >= 0)
+    {
+        return switched;
+    }
     if (song->playlist[++(song->playlistPos)] != PLAYLIST_EMPTY_SLOT)
     {
         return 1;

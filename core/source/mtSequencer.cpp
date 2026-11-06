@@ -10,6 +10,7 @@
 #include "mtSequencer.h"
 #include "mtStructs.h"
 #include "sampleRecorder/sampleRecorder.h"
+#include "songLoop.h"
 
 #include "configEditor/configEditor.h"
 #include "core/songTimer.h"
@@ -354,6 +355,13 @@ AUDIO_CORE_RAM void Sequencer::play_microStep(int row)
     {
 
         bool isLastStepInPattern = playerRow.actual_pos == patternRow.length;
+        // Song Loop: in Performance, track 1 can play backwards or at random, so its
+        // position says nothing about the pattern's end; the step count does (as isLastPatternStep
+        // and the pattern end itself), so the next pattern loads once, on the last step
+        if (player.performanceMode)
+        {
+            isLastStepInPattern = playerRow.actual_pos_absolute == getPatternLengthWithSel();
+        }
         bool isLastStepInSelectionMode =
           player.selectionModeLooped && playerRow.actual_pos == player.selectionModeLastStep;
 
@@ -366,7 +374,7 @@ AUDIO_CORE_RAM void Sequencer::play_microStep(int row)
                 player.sequencialSwitch_loaded = true;
             }
         }
-        else if (((playerRow.actual_pos == patternRow.length)) && player.songMode)
+        else if (isLastStepInPattern && player.songMode) // Song Loop: was actual_pos == length
         {
             loadNextPattern(newFileManager.getNextSongPattern());
         }
@@ -1565,6 +1573,8 @@ void Sequencer::stop(StopContext context)
     player.uStep = 0;
     player.selectionMode = false;
     player.selectionModeLooped = false;
+    // Song Loop: Stop ends the loop
+    songloop::stopped();
 
     player.swing.resetSwing();
 
@@ -1943,7 +1953,11 @@ void Sequencer::switchRowStep(uint8_t row) // przełączamy stepy w zależności
             }
         }
 
-        player.onPatternOrSelectionEnd();
+        // Song Loop: Performance stays on while the block loops
+        if (!(player.onPatternOrSelectionEnd == cbkTurnOffPerformanceMode && songloop::keepPerformance()))
+        {
+            player.onPatternOrSelectionEnd();
+        }
         if (!isNextPatternAvailable)
             player.onSongEnd();
 

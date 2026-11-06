@@ -5,6 +5,7 @@
 #include "display.h"
 
 #include "mtSequencer.h"
+#include "songLoop.h"
 #include "patternEditor/patternEditor.h"
 
 cSongTimer songTimer;
@@ -74,8 +75,18 @@ void cSongTimer::refresh()
     else
         actualData.step = patternEditor.trackerPattern.actualStep;
 
+    // Song Loop: |: while the song heads for the block, |: :| while it loops
+    static uint8_t songloopSign = 0;
+    const bool songloopPlaying = actualData.seqState == Sequencer::SEQ_STATE_PLAY_SONG ||
+                                 actualData.seqState == Sequencer::SEQ_STATE_PLAY_PERFORMANCE;
+    const uint8_t songloopNow = !songloopPlaying                                 ? 0
+                                : songloop::looping(mtProject.song.playlistPos) ? 2
+                                : songloop::armed(mtProject.song.playlistPos)   ? 1
+                                                                                : 0;
+    const bool songloopChanged = songloopNow != songloopSign;
+    songloopSign = songloopNow;
     // przerwanie operacji jesli dane do wyswietlenia nie ulegly zmianie
-    if (lastData.step == actualData.step && lastData.seconds == actualData.seconds &&
+    if (!songloopChanged && lastData.step == actualData.step && lastData.seconds == actualData.seconds &&
         lastData.minutes == actualData.minutes && lastData.pattern == actualData.pattern &&
         lastData.seqState == actualData.seqState)
         return;
@@ -109,6 +120,10 @@ void cSongTimer::refresh()
     else if (sequencer.isPlay())
     {
         seqState = "  ";
+    }
+    if (songloopSign != 0)
+    {
+        seqState = songloopSign == 2 ? songloop::kLoopSign : songloop::kArmedSign;
     }
 
     const char* timerFormat = "%3im:%02is %2s P%i.%03i%2s";

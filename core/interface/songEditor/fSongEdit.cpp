@@ -11,11 +11,164 @@
 #include "mtPadBoard.h"
 #include "mtPadsBacklight.h"
 #include "mtStructs.h"
+#include "songLoop.h"
 #include "util_math.h"
 
 cSongEditor songEditor;
 
 static cSongEditor* SE = &songEditor;
+
+// Song Loop
+// Two or more song positions selected in the pattern list (Shift + Down). The block stays
+// while the cursor visits the song grid, whose own selection (for edits) is CE's.
+static bool songloopBlockSelected()
+{
+    return songloop::listLength() >= 2;
+}
+
+static uint8_t songloopLabel()
+{
+    return songloop::leftLabel(sequencer.isStop(), sequencer.isSongMode(), songloopBlockSelected());
+}
+
+// While a block loops or waits to, the song can't change under it.
+static bool songloopProtects()
+{
+    return songloop::active();
+}
+
+// While a block is selected or loops, the song's slots stay as they are: Add Slot, Delete
+// Slot (also the Delete key in the list) and << Pattern >> do nothing and are greyed out.
+// Undo, and the grid's Delete, Copy and Paste (patterns' contents) still work.
+static bool songloopLocksSong()
+{
+    return songloop::active() || songloop::listLength() >= 2;
+}
+
+// Add Slot, Delete Slot and << Pattern >>: CE's colours (by Rec), or greyed out while the
+// song is locked.
+static void songloopLabelColors()
+{
+    const bool locked = songloopLocksSong();
+    for (uint8_t i = 3; i < 6; i++)
+    {
+        display.setControlColors(SE->label[i],
+                                 SE->editMode && !locked ? display.getTheme().activeButtonLabelsColors
+                                                         : display.getTheme().inactiveButtonLabelsColors);
+        display.refreshControl(SE->label[i]);
+    }
+}
+
+// Without Rec the cursor follows the song while it plays, as in CE: then a change of the
+// block doesn't move it (it would only jump back).
+static void songloopCursor(int position)
+{
+    if (SE->editMode || sequencer.isStop())
+    {
+        SE->selectedSongPosition = position;
+    }
+}
+
+// The block at first, length: in the list, and in the loop when one runs.
+static void songloopSetBlock(int first, int length)
+{
+    songloop::setListBlock(first, length);
+    if (songloop::active())
+    {
+        songloop::setBlock(first, first + length - 1);
+    }
+    SE->refreshPatternsList();
+    SE->refreshSongPlayerSelectedSlot();
+}
+
+// During the loop: the whole block moves by delta, within the song.
+static void songloopMove(int delta)
+{
+    const int length = std::max<int>(1, songloop::listLength());
+    const int first = clamp<int>(songloop::listFirst() + delta, 0, SE->songPlayerData.songLength - length);
+    songloopCursor(first);
+    songloopSetBlock(first, length);
+}
+
+// Up/Down (and the jog wheel) in the pattern list. Shift + Down selects downwards from the
+// cursor, Shift + Up takes the bottom back; the block never grows upwards. During the loop
+// Up/Down move the block and Shift + Up/Down resize it. False: CE's own handling.
+static bool songloopListKey(int delta, bool shift)
+{
+    if (songloop::active() && !shift)
+    {
+        songloopMove(delta);
+        return true;
+    }
+    if (!shift)
+    {
+        songloop::setListBlock(0, 0); // CE moves the cursor; the block is gone
+        return false;
+    }
+    if (!songloop::active() && !SE->editMode && !sequencer.isStop())
+    {
+        return true; // as CE: the cursor follows the song unless Rec is on
+    }
+
+    int first = SE->selectedSongPosition;
+    int length = 1;
+    if (songloop::listLength() >= 1)
+    {
+        first = songloop::listFirst();
+        length = songloop::listLength();
+    }
+    length = clamp<int>(length + (delta > 0 ? 1 : -1), 1, SE->songPlayerData.songLength - first);
+    songloopCursor(first + length - 1);
+    songloopSetBlock(first, length);
+    return true;
+}
+
+// The left softkey (and Shift + Play): Play Selection or Continue Song.
+static bool songloopPress()
+{
+    const uint8_t label = songloopLabel();
+    if (label == 0)
+    {
+        return false;
+    }
+
+    if (label == 2)
+    {
+        // Continue Song: the block is gone and the cursor goes to the position playing
+        songloop::press(false, true, 0, 0);
+        songloop::setListBlock(0, 0);
+        const uint8_t pos = mtProject.song.playlistPos;
+        if (SE->selectedPlace != 0)
+        {
+            SE->selectedSongPosition = pos;
+        }
+        SE->refreshPatternsList();
+        SE->refreshSongPlayerSelectedSlot();
+        SE->showIcon(iconPlay, pos);
+        return true;
+    }
+
+    const uint8_t first = songloop::listFirst();
+    const uint8_t length = songloop::listLength();
+    const bool stopped = sequencer.isStop();
+    if (stopped)
+    {
+        sequencer.playSongFromPosition(first);
+        SE->lastSongListPos = first;
+    }
+    songloop::press(false, true, first, first + length - 1);
+    // the sign at once (not CE's play icon first): the loop is set now
+    SE->showIcon(iconPlay, mtProject.song.playlistPos);
+    if (stopped)
+    {
+        // CE's startSongPlayer puts the play line on the cursor's row, which Shift + Down left
+        // at the block's bottom: the line goes on the row playing
+        SE->startSongPlayer();
+        SE->refreshSongPlayer(mtProject.song.playlistPos);
+    }
+    display.refreshControl(SE->songPlayerControl);
+    return true;
+}
 
 static void functPlayPattern();
 static void functPlaySong();
@@ -71,6 +224,25 @@ void cSongEditor::update()
     {
         songPlayerRefreshTimer = 0;
         refreshButtonsLabels();
+        // Song Loop: the block within the song (Undo can shorten it); the slot
+        // labels grey while a block is selected or loops
+        const int first = songloop::listFirst();
+        const int length = songloop::listLength();
+        if (length > 0 && first + length > songPlayerData.songLength)
+        {
+            const int fit = std::max(0, songPlayerData.songLength - first);
+            songloop::setListBlock(first, fit);
+            if (fit > 0 && songloop::active())
+            {
+                songloop::setBlock(first, first + fit - 1);
+            }
+        }
+        static bool songloopLocked = false;
+        if (songloopLocksSong() != songloopLocked)
+        {
+            songloopLocked = !songloopLocked;
+            songloopLabelColors();
+        }
 
         Sequencer::enSeqState seqState = sequencer.getSeqState();
         if (seqState == Sequencer::SEQ_STATE_PLAY_SONG)
@@ -118,6 +290,28 @@ void cSongEditor::update()
                 icon_t playerIcon =
                   patternsList.icon.iconNum == displayPlayIcon + iconLoop ? iconLoop : iconPlay;
                 showIcon(playerIcon, lastSongListPos);
+            }
+        }
+        // Song Loop: the sign on the playing position, whatever CE left there
+        if (seqState != Sequencer::SEQ_STATE_STOP)
+        {
+            // CE leaves the icon as it was when the screen opens in song mode (e.g. after
+            // Performance), and shows its play icon wherever the cursor goes
+            const uint8_t pos = mtProject.song.playlistPos;
+            const bool ours = patternsList.icon.iconNum == songloop::kListIcon ||
+                              patternsList.icon.iconNum == songloop::kArmedListIcon;
+            if (songloop::active())
+            {
+                const uint8_t want = songloop::looping(pos) ? songloop::kListIcon : songloop::kArmedListIcon;
+                if (!patternsList.icon.useSpecialIcons || patternsList.icon.iconNum != want ||
+                    static_cast<uint8_t>(patternsList.icon.iconPositionInList) != pos)
+                {
+                    showIcon(iconPlay, pos);
+                }
+            }
+            else if (ours)
+            {
+                showIcon(iconPlay, pos); // the loop ended: CE's play icon
             }
         }
         if (seqState == Sequencer::SEQ_STATE_STOP)
@@ -238,6 +432,11 @@ void cSongEditor::lightUpPadBoard()
 
 static void functPlayPattern()
 {
+    // Song Loop: Play Selection, Continue Song
+    if (songloopPress())
+    {
+        return;
+    }
     Sequencer::enSeqState seqState = sequencer.getSeqState();
 
     if (seqState == Sequencer::SEQ_STATE_STOP)
@@ -350,6 +549,15 @@ void playSongFromSelectedPattern_stop()
 
 static void functPlaySong()
 {
+    // Song Loop: Play Song with a block plays the song from the block's start
+    // and drops the block (also with the cursor in the grid)
+    if (sequencer.getSeqState() == Sequencer::SEQ_STATE_STOP && songloop::listLength() >= 2)
+    {
+        SE->selectedSongPosition = songloop::listFirst();
+        songloop::setListBlock(0, 0);
+        SE->refreshPatternsList();
+        SE->refreshSongPlayerSelectedSlot();
+    }
     if (sequencer.getSeqState() == Sequencer::SEQ_STATE_STOP)
     {
         playSongFromSelectedPattern();
@@ -362,6 +570,11 @@ static void functPlaySong()
 
 static void functIncPattern(uint8_t state)
 {
+    // Song Loop: the slots can't change under a selected or looping block
+    if (songloopLocksSong())
+    {
+        return;
+    }
     if (SE->isBusy)
     {
         return;
@@ -394,6 +607,11 @@ static void functIncPattern(uint8_t state)
 
 static void functDecPattern(uint8_t state)
 {
+    // Song Loop: the slots can't change under a selected or looping block
+    if (songloopLocksSong())
+    {
+        return;
+    }
     if (SE->isBusy)
     {
         return;
@@ -426,6 +644,11 @@ static void functDecPattern(uint8_t state)
 
 static void functAddSlot()
 {
+    // Song Loop: the slots can't change under a selected or looping block
+    if (songloopLocksSong())
+    {
+        return;
+    }
     if (SE->isBusy)
     {
         return;
@@ -500,6 +723,11 @@ static void functAddSlot()
 
 static void functDeleteSlot()
 {
+    // Song Loop: the slots can't change under a selected or looping block
+    if (songloopLocksSong())
+    {
+        return;
+    }
     if (SE->isBusy)
     {
         return;
@@ -658,6 +886,17 @@ static void functEncoder(int16_t value)
     {
         case 1:
         {
+            // Song Loop: the jog moves the looping block; Shift + jog (the pattern
+            // number) does nothing while a block is selected or loops
+            if (songloopProtects() && !SE->buttons->isButtonPressed(interfaceButtonShift))
+            {
+                songloopMove(interfaceGlobals.invertValForList ? -value : value);
+                break;
+            }
+            if (songloopLocksSong() && SE->buttons->isButtonPressed(interfaceButtonShift))
+            {
+                break;
+            }
             if (SE->buttons->isButtonPressed(interfaceButtonShift))
             {
                 SE->changeSelectedPlayListPattern(value);
@@ -706,7 +945,14 @@ static void functUp()
     switch (SE->selectedPlace)
     {
         case 0: SE->walkOnSongPlayer(playerUp); break;
-        case 1: SE->changeSongPositionSelection(-1); break;
+        case 1:
+            // Song Loop: Shift + Up/Down select in the list; the loop moves
+            if (songloopListKey(-1, SE->buttons->isButtonPressed(interfaceButtonShift)))
+            {
+                break;
+            }
+            SE->changeSongPositionSelection(-1);
+            break;
         case 2:
             if (SE->buttons->isButtonPressed(interfaceButtonShift))
             {
@@ -730,7 +976,14 @@ static void functDown()
     switch (SE->selectedPlace)
     {
         case 0: SE->walkOnSongPlayer(playerDown); break;
-        case 1: SE->changeSongPositionSelection(1); break;
+        case 1:
+            // Song Loop: Shift + Up/Down select in the list; the loop moves
+            if (songloopListKey(1, SE->buttons->isButtonPressed(interfaceButtonShift)))
+            {
+                break;
+            }
+            SE->changeSongPositionSelection(1);
+            break;
         case 2:
         {
             if (SE->buttons->isButtonPressed(interfaceButtonShift))
@@ -907,6 +1160,20 @@ void cSongEditor::refreshSongPlayer(uint8_t source)
         return;
     }
 
+    // Song Loop: the song position and the step read together, in song mode
+    // (a pattern end between update's read of the position and this read of the step drew the
+    // line at the top of the old row, which a loop makes a visible jump; and with Performance and
+    // Rec, CE's position wasn't updated at all)
+    if (sequencer.isSongMode())
+    {
+        DISABLE_GLOBAL_INTERRUPTS();
+        songPlayerData.progress.currentSongPosition = mtProject.song.playlistPos;
+        songPlayerData.progress.patternLength = sequencer.getPatternLength();
+        songPlayerData.progress.positionInPattern = sequencer.getActualPos();
+        ENABLE_GLOBAL_INTERRUPTS();
+        display.refreshControl(songPlayerControl);
+        return;
+    }
     songPlayerData.progress.currentSongPosition = source;
     songPlayerData.progress.patternLength = sequencer.getPatternLength();
     songPlayerData.progress.positionInPattern = sequencer.getActualPos();
@@ -962,6 +1229,8 @@ void cSongEditor::refreshEditMode()
 
     refreshPatternsList();
     activateLabelsBorder();
+    // Song Loop: the slot labels greyed out while the song is locked
+    songloopLabelColors();
 
     display.refreshControl(songPlayerControl);
     display.synchronizeRefresh();

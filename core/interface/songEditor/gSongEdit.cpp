@@ -2,6 +2,7 @@
 
 #include "Platform.h"
 #include "mtSequencer.h"
+#include "songLoop.h"
 #include "string.h"
 
 static const uint16_t framesPlaces[3][4] = {
@@ -237,6 +238,31 @@ void cSongEditor::refreshSongPlayerSelectedSlot()
 void cSongEditor::refreshButtonsLabels()
 {
     Sequencer::enSeqState seqState = sequencer.getSeqState();
+    // Song Loop: the left softkey reads Play Selection or Continue Song
+    static uint8_t songloopShown = 0;
+    const uint8_t songloopWanted =
+      songloop::leftLabel(sequencer.isStop(), sequencer.isSongMode(), songloop::listLength() >= 2);
+    if (songloopWanted != songloopShown)
+    {
+        songloopShown = songloopWanted;
+        playButtonsState = 0xFF; // CE draws its labels again, then this one on top
+    }
+    const uint8_t songloopStateBefore = playButtonsState;
+    struct SongloopLabel
+    {
+        cSongEditor* editor;
+        uint8_t wanted;
+        uint8_t stateBefore;
+        ~SongloopLabel()
+        {
+            if (wanted != 0 && editor->playButtonsState != stateBefore)
+            {
+                display.setControlText(editor->label[0], wanted == 1 ? "Play" : "Continue");
+                display.setControlText2(editor->label[0], wanted == 1 ? "Selection" : "Song");
+                display.refreshControl(editor->label[0]);
+            }
+        }
+    } songloopLabel{ this, songloopWanted, songloopStateBefore };
     if (seqState == Sequencer::SEQ_STATE_STOP)
     {
         if (buttons->isButtonPressed(interfaceButtonShift) && selectedPlace <= 0 &&
@@ -414,6 +440,12 @@ void cSongEditor::showIcon(icon_t iconType, uint8_t position)
     patternsList.icon.useSpecialIcons = 1;
     patternsList.icon.iconPositionInList = position;
     patternsList.icon.iconNum = displayPlayIcon + iconType;
+    // Song Loop: |: :| or |:, not CE's play or loop icon, while a block is set
+    if (songloop::active())
+    {
+        patternsList.icon.iconNum =
+          songloop::looping(position) ? songloop::kListIcon : songloop::kArmedListIcon;
+    }
 
     // display.setControlValue(songPlayerControl, selectedPattern);
     display.refreshControl(songPlayerControl);
