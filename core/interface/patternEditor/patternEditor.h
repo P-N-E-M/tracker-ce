@@ -352,6 +352,9 @@ class cPatternEditor : public ModuleBase
     static constexpr uint8_t kPnemEightTrackColumns = 0b0011; // Note and Instr
     bool pnemViewDefaultSet = false;
     void pnemTogglePatternView();
+    // PNEM: Track wrap (Config > General): an arrow without Shift at the first or last track goes to
+    // the other end. True if it did.
+    bool pnemWrapTrack(bool right);
 
     //--------------------------------------------------------
     // powiekszona funkcjolanosc przyciskow pod ekranem - 2 strony
