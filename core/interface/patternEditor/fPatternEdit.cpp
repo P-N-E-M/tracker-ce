@@ -1423,20 +1423,21 @@ static void functMuteTrack(uint8_t button, uint8_t state)
     if (state == buttonPress)
     {
         bool midiTrack = !isSampleTrack(PTE->trackerPattern.actualTrack);
-        int trackIdx = midiTrack ? button + 8 : button;
+        int trackIdx = PTE->pnemSoftkeyTrack(button, midiTrack); // PNEM: Align mute keys
 
         if (trackIdx >= kAllTracks)
         {
             return;
         }
 
-        auto& mute =
-          midiTrack ? mtProject.values.midiTrackMute[button] : mtProject.values.trackMute[button];
+        const bool sampleTrack = trackIdx < kSampleTracks;
+        auto& mute = sampleTrack ? mtProject.values.trackMute[trackIdx]
+                                 : mtProject.values.midiTrackMute[trackIdx - kSampleTracks];
 
         mute = !mute;
-        if (!midiTrack)
+        if (sampleTrack)
         {
-            engine.muteTrack(button, mtProject.values.trackMute[button]);
+            engine.muteTrack(trackIdx, mtProject.values.trackMute[trackIdx]);
         }
         PTE->trackerPattern.inactive[trackIdx] = mute;
 
@@ -1453,7 +1454,7 @@ static void functRecArmTrack(uint8_t button, uint8_t state)
     if (state == buttonPress)
     {
         bool midiTrack = !isSampleTrack(PTE->trackerPattern.actualTrack);
-        int trackIdx = midiTrack ? button + 8 : button;
+        int trackIdx = PTE->pnemSoftkeyTrack(button, midiTrack); // PNEM: Align mute keys
 
         if (trackIdx >= kAllTracks)
         {
@@ -5103,6 +5104,23 @@ bool cPatternEditor::pnemWrapTrack(bool right)
     lightUpPadBoard();
     display.refreshControl(patternControl);
     return true;
+}
+
+// PNEM: Align mute keys: the last track on screen is the last softkey; first = the first track on
+// screen + the tracks on screen (4 or 8) - 8, at least track 1
+int cPatternEditor::pnemSoftkeyTrack(uint8_t button, bool midiTracks)
+{
+    if (!pnem::option(pnem::kAlignMuteKeys))
+    {
+        return midiTracks ? button + kSampleTracks : button;
+    }
+    const int visible = patternViewMode > 0 ? 8 : 4;
+    int first = trackerPattern.firstVisibleTrack + visible - 8;
+    if (first < 0)
+    {
+        first = 0;
+    }
+    return first + button;
 }
 
 // PNEM: 8 track view

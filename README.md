@@ -23,6 +23,7 @@ report problems with them to Polyend; open an issue here instead.
 - **Pads 16**: done, tested on a Tracker+.
 - **8 track view**: done, tested on a Tracker+.
 - **Track wrap**: done, tested on a Tracker+.
+- **Align mute keys**: done, tested on a Tracker+.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
@@ -71,6 +72,14 @@ tap on **Pattern** switches between that and the 4-track view. Pattern + Note, I
 In the Pattern screen, Left on the first track goes to the last one (the view moves to the last
 tracks) and Right on the last track goes to the first. Shift + arrows (selections) work as in CE.
 Config > General > **Track wrap** turns it off.
+
+### Align mute keys
+
+In the Pattern screen, Shift + a button below the screen mutes (Shift + Rec + button: arms for
+live recording) the tracks on screen: the last track on screen is always the last button, so with
+tracks 6-9 on screen the buttons are tracks 2-9. In the 8-track view they are exactly the tracks
+on screen. The labels name the tracks. Config > General > **Align mute keys** turns it off (CE:
+tracks 1-8, or 9-16 with the cursor on a MIDI track).
 
 ### MIDI Mixer
 

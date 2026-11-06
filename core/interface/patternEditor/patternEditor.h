@@ -355,6 +355,9 @@ class cPatternEditor : public ModuleBase
     // PNEM: Track wrap (Config > General): an arrow without Shift at the first or last track goes to
     // the other end. True if it did.
     bool pnemWrapTrack(bool right);
+    // PNEM: Align mute keys (Config > General): the track a softkey mutes or arms with Shift. On:
+    // the tracks on screen, the last one on the last key; off: 1-8, or 9-16 on a MIDI track (CE).
+    int pnemSoftkeyTrack(uint8_t button, bool midiTracks);
 
     //--------------------------------------------------------
     // powiekszona funkcjolanosc przyciskow pod ekranem - 2 strony
