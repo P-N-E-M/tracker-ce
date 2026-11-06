@@ -22,6 +22,7 @@ report problems with them to Polyend; open an issue here instead.
 - **MIDI Mixer**: done, tested on a Tracker+.
 - **Pads 16**: done, tested on a Tracker+.
 - **8 track view**: done, tested on a Tracker+.
+- **Track wrap**: done, tested on a Tracker+.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
@@ -64,6 +65,12 @@ the MIDI tracks too (CE: tracks 1-8).
 The Pattern screen opens with 8 tracks (the Note and Instr columns) after the Tracker starts, and a
 tap on **Pattern** switches between that and the 4-track view. Pattern + Note, Instr, FX1 or FX2
 (choosing the columns) works as in CE. Config > General > **8 track view** turns it off.
+
+### Track wrap
+
+In the Pattern screen, Left on the first track goes to the last one (the view moves to the last
+tracks) and Right on the last track goes to the first. Shift + arrows (selections) work as in CE.
+Config > General > **Track wrap** turns it off.
 
 ### MIDI Mixer
 
