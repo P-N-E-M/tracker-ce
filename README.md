@@ -5,12 +5,53 @@ Unofficial firmware for the **Polyend Tracker+**, built on
 few workflow features to CE and leaves everything else as CE has it.
 
 PNEM CE is one musician's Tracker: features I find handy, built for my own use and released
-as-is. Take whatever inspires you. The features try to stay in the spirit of the original
-Tracker; if one of them belongs in CE itself, it can go to `polyend/tracker-ce` as a pull
-request.
+as-is. Take whatever inspires you.
 
-PNEM CE is not affiliated with Polyend, and Polyend doesn't support these builds. Please don't
-report problems with them to Polyend; open an issue here instead.
+## Design principles
+
+- **Improve the workflow, don't replace it.** I chose the Tracker for its workflow: the
+  tracker, Performance mode and the song, working together. PNEM CE builds on that workflow
+  and stays as close as it can to the Tracker's philosophy.
+- **Non-destructive.** With PNEM CE installed, the Tracker should work exactly like CE until
+  you reach for one of its features. Anything that changes how an existing control behaves has
+  a switch in Config > General. Everything else only comes into play when you use it.
+- **Fit the interface.** I'm a UX designer by profession, and that drives how these features
+  are designed. Each one should fit the Tracker's workflow, the way a performing electronic
+  musician works, and familiar "don't make me think" patterns: consistent with the rest of
+  the interface, with clear feedback, and nothing that looks like an error. The Tracker's
+  screen and controls are limited; if a feature can't be done well within them, I leave it
+  out.
+- **Respect the hardware.** The features shouldn't push the CPU or memory to their limits. If
+  a feature costs too much, I look for a lighter solution or don't build it.
+- **Tracker+ first.** I develop and test on a Tracker+. I can't test on the Original Tracker
+  or the Tracker Mini.
+- **Built for my own use.** These are features I miss in my own music. That doesn't mean
+  everyone will find them useful. Suggestions are welcome, but I only build the ones I'd use
+  myself.
+- **A showcase for CE.** Many of these features are requested on
+  [Polyend Backstage](https://backstage.polyend.com/). Instead of only describing a wish, I
+  want to show a working solution that fits the Tracker's philosophy and interface. If the CE
+  maintainers want one of them, I'm happy to contribute it to `polyend/tracker-ce` as a pull
+  request.
+
+## Disclaimer
+
+- **Unofficial.** PNEM CE is not affiliated with Polyend, and Polyend doesn't support these
+  builds. Please don't report problems with them to Polyend; open an issue here instead.
+- **As-is, at your own risk.** No warranty of any kind. CE's own
+  [notice](#notice-official-support-warranty--hardware-disclaimer) below applies as well.
+- **Back up first.** Copy your SD card's `Projects` folder before you flash.
+- **Going back** is flashing the official CE (or any other `.ptf`) the usual way. If a build
+  ever fails to start, the
+  [emergency recovery](#4-flashing-on-hardware--emergency-recovery) below works too.
+- **Your projects in the official CE.** A project made with PNEM CE opens in the official CE,
+  which ignores what PNEM CE adds:
+  - Loop crossfades play as CE's plain loop. The setting stays in the instrument and is back
+    when you open the project in PNEM CE again.
+  - X FX steps look empty and the pattern plays at its normal tempo.
+  - A Performance scene column becomes a regular Performance effect. Saving the project in
+    the official CE loses its scenes.
+  - CE ignores PNEM CE's settings in Config > General.
 
 ## Status
 
