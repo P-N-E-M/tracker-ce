@@ -13,8 +13,9 @@ as-is. Take whatever inspires you.
   tracker, Performance mode and the song, working together. PNEM CE builds on that workflow
   and stays as close as it can to the Tracker's philosophy.
 - **Non-destructive.** With PNEM CE installed, the Tracker should work exactly like CE until
-  you reach for one of its features. Anything that changes how an existing control behaves has
-  a switch in Config > General. Everything else only comes into play when you use it.
+  you reach for one of its features. Anything that changes how an existing control behaves is
+  off by default and has a switch in Config > General. Everything else only comes into play
+  when you use it.
 - **Fit the interface.** I'm a UX designer by profession, and that drives how these features
   are designed. Each one should fit the Tracker's workflow, the way a performing electronic
   musician works, and familiar "don't make me think" patterns: consistent with the rest of
@@ -104,23 +105,25 @@ the MIDI tracks too (CE: tracks 1-8).
 
 ### 8 track view
 
-The Pattern screen opens with 8 tracks (the Note and Instr columns) after the Tracker starts, and a
-tap on **Pattern** switches between that and the 4-track view. Pattern + Note, Instr, FX1 or FX2
-(choosing the columns) works as in CE. Config > General > **8 track view** turns it off.
+Off by default: switch it on in Config > General > **8 track view**. The Pattern screen then
+opens with 8 tracks (the Note and Instr columns) after the Tracker starts, and a tap on
+**Pattern** switches between that and the 4-track view. Pattern + Note, Instr, FX1 or FX2
+(choosing the columns) works as in CE.
 
 ### Track wrap
 
-In the Pattern screen, Left on the first track goes to the last one (the view moves to the last
-tracks) and Right on the last track goes to the first. Shift + arrows (selections) work as in CE.
-Config > General > **Track wrap** turns it off.
+Off by default: switch it on in Config > General > **Track wrap**. In the Pattern screen, Left on
+the first track then goes to the last one (the view moves to the last tracks) and Right on the
+last track goes to the first. Shift + arrows (selections) work as in CE.
 
 ### Align mute keys
 
-In the Pattern screen, Shift + a button below the screen mutes (Shift + Rec + button: arms for
-live recording) the tracks on screen: the last track on screen is always the last button, so with
-tracks 6-9 on screen the buttons are tracks 2-9. In the 8-track view they are exactly the tracks
-on screen. The labels name the tracks. Config > General > **Align mute keys** turns it off (CE:
-tracks 1-8, or 9-16 with the cursor on a MIDI track).
+Off by default: switch it on in Config > General > **Align mute keys**. In the Pattern screen,
+Shift + a button below the screen then mutes (Shift + Rec + button: arms for live recording) the
+tracks on screen: the last track on screen is always the last button, so with tracks 6-9 on
+screen the buttons are tracks 2-9. In the 8-track view they are exactly the tracks on screen. The
+labels name the tracks. Without it (CE) the buttons are tracks 1-8, or 9-16 with the cursor on a
+MIDI track.
 
 ### MIDI Mixer
 
