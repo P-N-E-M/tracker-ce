@@ -60,7 +60,7 @@ as-is. Take whatever inspires you.
 
 ## Status
 
-- **Song Loop**: done, tested on a Tracker+.
+- **Song Loop & Queue**: done, tested on a Tracker+.
 - **Loop Crossfade**: done, tested on a Tracker+.
 - **X FX (tempo multiplier)**: done, tested on a Tracker+.
 - **Performance Scenes**: done, tested on a Tracker+.
@@ -77,10 +77,11 @@ features are not checked on them, and releases are for the Tracker+ only.
 
 ## Features
 
-### Song Loop
+### Song Loop & Queue
 
-Loop a block of song positions while you play over it, and go on with the song when you're
-done. In the Song screen's pattern list (the Pattern column):
+Cue up any part of your song while it plays. The song moves on to it (or jumps back to it at
+the end of the pattern), loops it while you play over it, and continues when you're ready. In
+the Song screen's pattern list (the Pattern column):
 
 - **Select a block:** Shift + Down selects downwards from the cursor; Shift + Up takes the
   bottom back. A frame goes round the block. Down or Up without Shift drops it.
