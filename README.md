@@ -4,6 +4,10 @@ Unofficial firmware for the **Polyend Tracker+**, built on
 [Polyend's Tracker Community Edition (CE)](https://github.com/polyend/tracker-ce). It adds a
 few workflow features to CE and leaves everything else as CE has it.
 
+**Download: [PNEMv1 for the Tracker+](https://github.com/P-N-E-M/tracker-ce/releases/latest)**
+(`TrackerPlus_PNEMv1_1.0.0.ptf`). See [Install](#install), and read the
+[Disclaimer](#disclaimer) first.
+
 PNEM CE is one musician's Tracker: features I find handy, built for my own use and released
 as-is. Take whatever inspires you.
 
@@ -251,14 +255,17 @@ list. The other play modes keep CE's buttons.
 
 1. **Back up your SD card's `Projects` folder.** CE saves patterns in a newer format that
    older firmware can't read.
-2. **Build the firmware** (there are no releases yet): `make plus`, as in
-   [Building Firmware](#building-firmware) below, makes `build/TrackerPlus_PNEM_1.0.0.ptf`.
+2. **Download** `TrackerPlus_PNEMv1_1.0.0.ptf` from the
+   [latest release](https://github.com/P-N-E-M/tracker-ce/releases/latest) and copy it to the
+   `/Firmware/` folder on the SD card.
 3. **Flash it** as in
    [Flashing on Hardware & Emergency Recovery](#4-flashing-on-hardware--emergency-recovery)
-   below. Config then shows the version as `1.0.0 PNEM`.
+   below. Config then shows the version as `1.0.0 PNEMv1`.
 
 Releases are named `PNEMv1`, `PNEMv2` and so on: Config shows `1.0.0 PNEMv1`, where `1.0.0`
-is the CE version it is built on.
+is the CE version it is built on. Each release has a git tag of the same name, and is built
+from it with `make plus EDITION_NAME=PNEMv1`. A build of your own (`make plus`, as in
+[Building Firmware](#building-firmware) below) shows `1.0.0 PNEM`.
 
 ## Development
 
