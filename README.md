@@ -154,7 +154,7 @@ or the names you gave them):
 
 ### Synth Mute
 
-On the Master screen's **Global Mixer 3/3** page, Synth 1-3 get mute buttons, the way Delay,
+On the Master screen's **Global Mixer 4/4** page, Synth 1-3 get mute buttons, the way Delay,
 Reverb, Dry Mix and Line In have them on that page:
 
 - The button under a synth's meter mutes or unmutes it (**Mute** / **Unmute**). **Shift** + the
