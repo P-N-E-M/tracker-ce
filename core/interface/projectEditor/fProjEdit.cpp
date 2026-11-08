@@ -434,6 +434,10 @@ uint8_t cProjectEditor::loadProjectValues()
         if (mtProject.values.perfSelectedValues[i] > 3)
             mtProject.values.perfSelectedValues[i] = 0;
 
+        // PNEM: a Performance scene column keeps its scenes in all 16 bits of its four values
+        if (mtProject.values.perfFxPlaces[i] == performanceSceneFxId)
+            continue;
+
         // if(mtProject.values.perfFxValues[place][0] > 255 ||
         // mtProject.values.perfFxValues[place][0] < -255)
         if (mtProject.values.perfFxValues[i][0] != 0)
