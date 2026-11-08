@@ -1162,10 +1162,10 @@ struct strMtConfig
         uint8_t font;
         uint8_t previewVolume;
         uint8_t recThreshold;
-        // PNEM: options in Config > General (pnemOptions.h), in what was padding: a set bit is off
-        uint8_t pnemOptionsOff;
+        // PNEM: options in Config > General (pnemOptions.h), in what was padding: a set bit is on
+        uint8_t pnemOptionsOn;
     } general;
-    static_assert(sizeof(strGeneralValues) == 18, "PNEM: pnemOptionsOff must stay in the padding");
+    static_assert(sizeof(strGeneralValues) == 18, "PNEM: pnemOptionsOn must stay in the padding");
 
     struct strInterfaceState
     {

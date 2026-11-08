@@ -565,7 +565,7 @@ void resetConfig()
     mtConfig.general.lineInOutType = 0;
     mtConfig.general.previewVolume = PREVIEW_VOLUME_DEFAULT;
     mtConfig.general.recThreshold = recThreshold_default;
-    mtConfig.general.pnemOptionsOff = 0; // PNEM: options in Config > General, all on
+    mtConfig.general.pnemOptionsOn = 0; // PNEM: options in Config > General, all off
 
     // interface ----------------------------------------
     mtConfig.interface.fxPopupDescription = 0;

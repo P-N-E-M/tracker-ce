@@ -1,9 +1,10 @@
 // PNEM CE: options in Config > General for this fork's Pattern features.
 //
 // They live in the one padding byte mtConfig.general already had (the config format stays as
-// CE's): a set bit turns an option off, so a config CE wrote (0 there) has them all on. The menu
-// items edit one byte each (optionMenuValue, 1 = On); optionChanged writes them back, and
-// optionsFromConfig fills them after the config is read.
+// CE's): a set bit turns an option on, so a config CE wrote (0 there) has them all off and the
+// Tracker works as in CE until you switch one on. The menu items edit one byte each
+// (optionMenuValue, 1 = On); optionChanged writes them back, and optionsFromConfig fills them
+// after the config is read.
 
 #ifndef PNEM_OPTIONS_H_
 #define PNEM_OPTIONS_H_
