@@ -366,6 +366,10 @@ void checkConfig()
         if (mtConfig.values.perfSelectedValues[i] > 3)
             mtConfig.values.perfSelectedValues[i] = 0;
 
+        // PNEM: a Performance scene column keeps its scenes in all 16 bits of its four values
+        if (mtConfig.values.perfFxPlaces[i] == performanceSceneFxId)
+            continue;
+
         if (mtConfig.values.perfFxValues[i][0] != 0)
             mtConfig.values.perfFxValues[i][0] = 0;
         if (mtConfig.values.perfFxValues[i][1] > 255 || mtConfig.values.perfFxValues[i][1] < -255)
