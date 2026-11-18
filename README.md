@@ -71,6 +71,7 @@ as-is. Take whatever inspires you.
 - **Track wrap**: done, tested on a Tracker+.
 - **Align mute keys**: done, tested on a Tracker+.
 - **Navigate within track**: done, tested on a Tracker+.
+- **Delete note: full row**: done, tested on a Tracker+.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
@@ -139,6 +140,14 @@ classic trackers: Note, Instr, FX1 and FX2 (or m and V in that view), and on to 
 Note (to the left: the previous track's last column). In the 8-track view they go through the
 columns on screen. Shift + arrows (selections) work as in CE, and the Note, Instr, FX1 and FX2
 buttons still choose a column directly.
+
+### Delete note: full row
+
+Off by default: switch it on in Config > General > **Delete note: full row**. Delete on the Note
+column then clears the whole row (note, instrument, FX1, FX2, volume and micro-move) on synth and
+MIDI tracks too, as CE already does on sample tracks; CE keeps everything but the note there.
+Delete on the FX1, FX2, m or V column still clears only that column. (On the Instr column CE
+already clears the whole row.)
 
 ### MIDI Mixer
 

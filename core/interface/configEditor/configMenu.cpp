@@ -21,15 +21,15 @@
 #ifdef TRACKER_MINI
 constexpr uint8_t baseMenuGroupCount = 8;
 constexpr uint8_t projectMenuGroupCount = 10;
-constexpr uint8_t generalMenuGroupCount = 9 + 4; // PNEM: + the four Pattern options
+constexpr uint8_t generalMenuGroupCount = 9 + 5; // PNEM: + the five Pattern options
 #elif defined(PLATFORM_IMX)
 constexpr uint8_t baseMenuGroupCount = 7;
 constexpr uint8_t projectMenuGroupCount = 10;
-constexpr uint8_t generalMenuGroupCount = 12 + 4; // PNEM: + the four Pattern options
+constexpr uint8_t generalMenuGroupCount = 12 + 5; // PNEM: + the five Pattern options
 #else
 constexpr uint8_t baseMenuGroupCount = 6;
 constexpr uint8_t projectMenuGroupCount = 10;
-constexpr uint8_t generalMenuGroupCount = 12 + 4; // PNEM: + the four Pattern options
+constexpr uint8_t generalMenuGroupCount = 12 + 5; // PNEM: + the five Pattern options
 #endif
 
 // baza baz
@@ -197,6 +197,12 @@ const char pnemNavigateWithinTrackDesc[] = { "On: the arrows between tracks go t
 const strItemTypeListTextWithAction setupPnemNavigateWithinTrack{ &pnem::optionMenuValue[pnem::kNavigateWithinTrack], 2, onOffStateTexts, pnem::optionChanged };
 cMenuItem melPnemNavigateWithinTrack(menuGeneral, "Navigate within track", pnemNavigateWithinTrackDesc,
                                      menuTypeItemListTextWithAction, &setupPnemNavigateWithinTrack);
+const char pnemDeleteNoteRowDesc[] = { "On: Delete on the Note column clears the whole row (note, "
+                                       "instrument, FX, volume and micro-move), on synth and MIDI "
+                                       "tracks too. Off: as CE." };
+const strItemTypeListTextWithAction setupPnemDeleteNoteRow{ &pnem::optionMenuValue[pnem::kDeleteNoteRow], 2, onOffStateTexts, pnem::optionChanged };
+cMenuItem melPnemDeleteNoteRow(menuGeneral, "Delete note: full row", pnemDeleteNoteRowDesc,
+                               menuTypeItemListTextWithAction, &setupPnemDeleteNoteRow);
 
 //==================================================================================================================================================================
 // Metroneome
