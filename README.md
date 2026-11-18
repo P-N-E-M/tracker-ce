@@ -70,6 +70,7 @@ as-is. Take whatever inspires you.
 - **8 track view**: done, tested on a Tracker+.
 - **Track wrap**: done, tested on a Tracker+.
 - **Align mute keys**: done, tested on a Tracker+.
+- **Navigate within track**: done, tested on a Tracker+.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
@@ -129,6 +130,15 @@ tracks on screen: the last track on screen is always the last button, so with tr
 screen the buttons are tracks 2-9. In the 8-track view they are exactly the tracks on screen. The
 labels name the tracks. Without it (CE) the buttons are tracks 1-8, or 9-16 with the cursor on a
 MIDI track.
+
+### Navigate within track
+
+Off by default: switch it on in Config > General > **Navigate within track**. In the Pattern
+screen, the arrows that move between tracks then go through the track's columns first, as in
+classic trackers: Note, Instr, FX1 and FX2 (or m and V in that view), and on to the next track's
+Note (to the left: the previous track's last column). In the 8-track view they go through the
+columns on screen. Shift + arrows (selections) work as in CE, and the Note, Instr, FX1 and FX2
+buttons still choose a column directly.
 
 ### MIDI Mixer
 

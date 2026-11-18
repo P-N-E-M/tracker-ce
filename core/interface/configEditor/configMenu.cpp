@@ -21,15 +21,15 @@
 #ifdef TRACKER_MINI
 constexpr uint8_t baseMenuGroupCount = 8;
 constexpr uint8_t projectMenuGroupCount = 10;
-constexpr uint8_t generalMenuGroupCount = 9 + 3; // PNEM: + the three Pattern options
+constexpr uint8_t generalMenuGroupCount = 9 + 4; // PNEM: + the four Pattern options
 #elif defined(PLATFORM_IMX)
 constexpr uint8_t baseMenuGroupCount = 7;
 constexpr uint8_t projectMenuGroupCount = 10;
-constexpr uint8_t generalMenuGroupCount = 12 + 3; // PNEM: + the three Pattern options
+constexpr uint8_t generalMenuGroupCount = 12 + 4; // PNEM: + the four Pattern options
 #else
 constexpr uint8_t baseMenuGroupCount = 6;
 constexpr uint8_t projectMenuGroupCount = 10;
-constexpr uint8_t generalMenuGroupCount = 12 + 3; // PNEM: + the three Pattern options
+constexpr uint8_t generalMenuGroupCount = 12 + 4; // PNEM: + the four Pattern options
 #endif
 
 // baza baz
@@ -191,6 +191,12 @@ cMenuItem melPnemTrackWrap(menuGeneral, "Track wrap", pnemTrackWrapDesc,
                            menuTypeItemListTextWithAction, &setupPnemTrackWrap);
 cMenuItem melPnemAlignMuteKeys(menuGeneral, "Align mute keys", pnemAlignMuteKeysDesc,
                                menuTypeItemListTextWithAction, &setupPnemAlignMuteKeys);
+const char pnemNavigateWithinTrackDesc[] = { "On: the arrows between tracks go through a track's "
+                                             "columns first (Note, Instr, FX1, FX2), then on to the "
+                                             "next track. Shift + arrows are as in CE." };
+const strItemTypeListTextWithAction setupPnemNavigateWithinTrack{ &pnem::optionMenuValue[pnem::kNavigateWithinTrack], 2, onOffStateTexts, pnem::optionChanged };
+cMenuItem melPnemNavigateWithinTrack(menuGeneral, "Navigate within track", pnemNavigateWithinTrackDesc,
+                                     menuTypeItemListTextWithAction, &setupPnemNavigateWithinTrack);
 
 //==================================================================================================================================================================
 // Metroneome

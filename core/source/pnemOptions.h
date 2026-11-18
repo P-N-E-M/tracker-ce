@@ -19,6 +19,7 @@ enum Option : uint8_t
     kEightTrackView, // Pattern opens with 8 tracks (Note + Instr); a Pattern tap toggles 8 / 4
     kTrackWrap,      // Left on track 1 goes to track 16, Right on track 16 to track 1
     kAlignMuteKeys,  // Shift + softkey mutes / arms the tracks on screen
+    kNavigateWithinTrack, // the arrows between tracks go through the track's columns first
     kOptionCount
 };
 

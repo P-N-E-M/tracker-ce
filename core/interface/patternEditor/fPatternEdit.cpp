@@ -2322,10 +2322,91 @@ void cPatternEditor::changeActualStep(uint8_t direction)
     {
         case moveUp: previousStep(); break;
         case moveDown: nextStep(); break;
-        case moveRight: nextTrack(); break;
-        case moveLeft: previousTrack(); break;
+        case moveRight:
+            if (!pnemNavigateWithinTrack(true)) // PNEM: Navigate within track
+            {
+                nextTrack();
+            }
+            break;
+        case moveLeft:
+            if (!pnemNavigateWithinTrack(false)) // PNEM: Navigate within track
+            {
+                previousTrack();
+            }
+            break;
         default: break;
     }
+}
+
+// PNEM: Navigate within track: the arrow that moves between tracks goes through the track's visible
+// columns first (Note, Instr, FX1, FX2; m and V in that view), as classic trackers do, and then to the
+// next track's first column (to the left: the previous track's last). Shift + arrow selects tracks as in
+// CE. Returns false when the option is off or Shift is held: then the caller moves the track.
+bool cPatternEditor::pnemNavigateWithinTrack(bool right)
+{
+    if (!pnem::option(pnem::kNavigateWithinTrack) || buttons->isButtonPressed(interfaceButtonShift))
+    {
+        return false;
+    }
+
+    const uint8_t visible = patternViewMode == 0 ? 0x0F : (patternViewMode & 0x0F);
+    if (visible == 0)
+    {
+        return false;
+    }
+
+    const int8_t dir = right ? 1 : -1;
+    for (int8_t param = (int8_t)editParam + dir; param >= EditNote && param <= EditFx2; param += dir)
+    {
+        if (visible & (1u << param))
+        {
+            pnemSetEditParam(param);
+            return true;
+        }
+    }
+
+    const uint8_t trackBefore = trackerPattern.actualTrack;
+    if (right)
+    {
+        nextTrack();
+    }
+    else
+    {
+        previousTrack();
+    }
+    if (trackerPattern.actualTrack != trackBefore)
+    {
+        int8_t param = right ? EditNote : EditFx2;
+        while (!(visible & (1u << param)))
+        {
+            param += dir;
+        }
+        pnemSetEditParam(param);
+    }
+    return true;
+}
+
+// PNEM: Navigate within track: the column under the cursor, as the Note, Instr, FX1 and FX2 buttons
+// choose it, without their other work (views, popups)
+void cPatternEditor::pnemSetEditParam(uint8_t param)
+{
+    if (param != editParam)
+    {
+        previousEditParam = editParam;
+        editParam = param;
+    }
+    trackerPattern.selectedParam = param;
+    wasNotesEditBefore = 0;
+    if (editMode || sequencer.isStop())
+    {
+        trackerPattern.selectState = 1;
+        trackerPattern.selectColumn = 0;
+        isSelectingNow = 0;
+    }
+    showActualParamOnBar();
+    showFxInfo();
+    lightUpPadBoard();
+    display.refreshControl(patternControl);
 }
 
 void cPatternEditor::previousTrack()
