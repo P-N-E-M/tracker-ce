@@ -72,6 +72,7 @@ as-is. Take whatever inspires you.
 - **Align mute keys**: done, tested on a Tracker+.
 - **Navigate within track**: done, tested on a Tracker+.
 - **Delete note: full row**: done, tested on a Tracker+.
+- **MIDI CC in Performance**: on `feature/perfmidicc`, being tested on a Tracker+.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
@@ -214,6 +215,27 @@ pads into three **scenes**. A scene stores a position for every other column: it
   scenes; as with any type, one plays at a time. Scene columns don't follow MIDI CC.
 - The scenes are stored in the scene column's own values, so the project and config formats
   stay as CE has them. CE shows a scene column as "none".
+
+### MIDI CC in Performance
+
+Six Performance column types, **MIDI CC A** to **MIDI CC F** (after Performance scene), control an
+external MIDI instrument from Performance mode, for example a synth's cutoff or resonance.
+
+- **The pads:** the top pad is **---** and sends nothing; the three below hold a value from 0 to
+  127, set in Rec with the encoder, as for any column.
+- **Where it goes:** to the MIDI instrument each affected track played last, as the CC that
+  instrument's channel has for CC A-F in the Instrument parameters (the same setting the Send CC
+  step FX uses). Set to Program Change or channel aftertouch, that goes out instead; poly
+  aftertouch needs a note, so a column sends nothing for it.
+- A track that hasn't played a MIDI note yet gets the value just before its next one. Tracks on
+  the same channel send it once.
+- Holding a pad and turning the encoder sends the values as you turn, and the pad's own value
+  again when you let go, as with the other columns.
+- **---** can't put the synth back to its own setting, as the Tracker doesn't know it: the synth
+  keeps the last value it got until you turn its knob. Put a "home" value on one of the pads if
+  you want one.
+- The Tracker's own synths aren't affected: their macros have Performance columns of their own.
+- Performance Scenes and the columns' MIDI CC control work with these columns as with any other.
 
 ### X FX: tempo multiplier
 

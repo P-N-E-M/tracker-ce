@@ -11,6 +11,7 @@
 #include "mtStructs.h"
 #include "sampleRecorder/sampleRecorder.h"
 #include "songLoop.h"
+#include "perfMidiCc.h" // PNEM: MIDI CC A-F as Performance columns
 
 #include "configEditor/configEditor.h"
 #include "core/songTimer.h"
@@ -654,6 +655,8 @@ AUDIO_CORE_RAM void Sequencer::play_microStep(int row)
                     {
                         assert(ccIndex < std::size(mtProject.values.midiInstrument[0].ccOut));
 
+                        // PNEM: a Performance MIDI CC column sends its value again at the next note
+                        pnem::perfcc::stepCcSent(ccChannel, ccIndex);
                         ccIndex = mtProject.values.midiInstrument[ccChannel - 1].ccOut[ccIndex];
 
                         killFxOnSlot(row, fxIndex);
@@ -2516,6 +2519,11 @@ AUDIO_CORE_RAM void Sequencer::sendNoteOn(uint8_t track,
     if (toSynth && synthsMuteState == MuteState::kMuted)
     {
         return;
+    }
+
+    if (toMidi) // PNEM: MIDI CC A-F as Performance columns: values the channel doesn't have yet
+    {
+        pnem::perfcc::beforeMidiNote(track, step->instrument);
     }
 
     if (toMidi || toSynth)
