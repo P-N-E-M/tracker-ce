@@ -1,5 +1,6 @@
 #include "configEditor/configMenu.h"
 #include "pnemOptions.h" // PNEM
+#include "pnemTranspose.h" // PNEM
 #include "configEditor/configEditor.h"
 
 #include "configEditor/configMenuActions.h"
@@ -20,15 +21,15 @@
 
 #ifdef TRACKER_MINI
 constexpr uint8_t baseMenuGroupCount = 8;
-constexpr uint8_t projectMenuGroupCount = 10;
+constexpr uint8_t projectMenuGroupCount = 10 + 1; // PNEM: + Transpose
 constexpr uint8_t generalMenuGroupCount = 9 + 5; // PNEM: + the five Pattern options
 #elif defined(PLATFORM_IMX)
 constexpr uint8_t baseMenuGroupCount = 7;
-constexpr uint8_t projectMenuGroupCount = 10;
+constexpr uint8_t projectMenuGroupCount = 10 + 1; // PNEM: + Transpose
 constexpr uint8_t generalMenuGroupCount = 12 + 5; // PNEM: + the five Pattern options
 #else
 constexpr uint8_t baseMenuGroupCount = 6;
-constexpr uint8_t projectMenuGroupCount = 10;
+constexpr uint8_t projectMenuGroupCount = 10 + 1; // PNEM: + Transpose
 constexpr uint8_t generalMenuGroupCount = 12 + 5; // PNEM: + the five Pattern options
 #endif
 
@@ -77,6 +78,13 @@ cMenuItem melPerformanceSource(menuProject, "Performance presets", perfPresDesc,
 cMenuItem melPatternDiv(menuProject, "Pattern divider", pattDivDesc, menuTypeItemListValues, &setupPatternDiv);
 cMenuItem melPadsScale(menuProject, "Notes scale", scaleDesc,  menuTypeItemListTextWithAction, &setupPadsScale);
 cMenuItem melPadsRootNote(menuProject,  "Root note", rootNoteDesc, menuTypeItemListTextWithAction,  &setupPadsRootNote);
+// PNEM: Transpose in scale (pnemTranspose.h)
+const char pnemTransposeDesc[] = { "In scale: turning the jog wheel on notes in the Pattern screen "
+                                   "moves them by steps of the Notes scale from the Root note, a chord "
+                                   "to the next chord of the scale. Chromatic: by semitones, as CE." };
+const char* const pnemTransposeTexts[2] = { "Chromatic", "In scale" };
+const strItemTypeListTextWithAction setupPnemTranspose{ &pnem::transpose::menuValue, 2, pnemTransposeTexts, pnem::transpose::menuChanged };
+cMenuItem melPnemTranspose(menuProject, "Transpose", pnemTransposeDesc, menuTypeItemListTextWithAction, &setupPnemTranspose);
 cMenuItem melPadsLayout(menuProject, "Notes layout", padLayDesc, menuTypeItemListTextWithAction, &setupPadsLayout);
 cMenuItem melAntialiasingEnable(menuProject, "Anti-aliasing", antialDesc, menuTypeItemListTextWithAction, &setupAntialiasing);
 cMenuItem melLimiterMode(menuProject, "Limiter mode", limiterDesc, menuTypeItemListTextWithAction, &setupLimiterMode);

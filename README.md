@@ -73,6 +73,7 @@ as-is. Take whatever inspires you.
 - **Navigate within track**: done, tested on a Tracker+.
 - **Delete note: full row**: done, tested on a Tracker+.
 - **MIDI CC in Performance**: on `feature/perfmidicc`, being tested on a Tracker+.
+- **Transpose in scale**: done, tested on a Tracker+.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
@@ -141,6 +142,21 @@ classic trackers: Note, Instr, FX1 and FX2 (or m and V in that view), and on to 
 Note (to the left: the previous track's last column). In the 8-track view they go through the
 columns on screen. Shift + arrows (selections) work as in CE, and the Note, Instr, FX1 and FX2
 buttons still choose a column directly.
+
+### Transpose in scale
+
+Off by default: set Config > Project Settings > **Transpose** to **In scale** (it's saved with the
+project). Turning the jog wheel on notes in the Pattern screen then moves them by steps of the
+project's **Notes scale** from its **Root note** (the same settings the pads use), instead of by
+semitones:
+
+- One note goes to the next note of the scale: in C major, C D E F G A B C.
+- A selection of notes moves as a chord to the next chord of the scale: in C major, C-E-G becomes
+  D-F-A (D minor, still in C major), then E-G-B.
+- A note outside the scale goes to the nearest note of the scale in that direction first.
+- Octaves (Shift + jog, Up/Down) stay octaves. Every scale in the list works, from Major and the
+  modes to the pentatonic and the more exotic ones.
+- With Notes scale on Chromatic, or Transpose on Chromatic, it's CE's semitone.
 
 ### Delete note: full row
 

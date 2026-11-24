@@ -1,4 +1,5 @@
 #include "core/interfaceDefs.h"
+#include "pnemTranspose.h" // PNEM: Transpose in scale
 #include "fileManager.h"
 #include "mtAudioEngine.h"
 #include "mtSequencer.h"
@@ -648,6 +649,9 @@ void Sequencer::changeSelectionNote(int16_t value, bool octaveShift)
     if (octaveShift)
         value = value * 12;
 
+    // PNEM: Transpose in scale: notes move by steps of the project's scale (octaves stay octaves)
+    const bool pnemInScale = pnem::transpose::inScale() && value % 12 != 0;
+
     for (uint8_t t = sel->firstTrack; t <= sel->lastTrack; t++)
     {
         for (uint8_t s = sel->firstStep, offset = 0; s <= sel->lastStep; s++, offset++)
@@ -680,7 +684,9 @@ void Sequencer::changeSelectionNote(int16_t value, bool octaveShift)
                 }
                 else
                 {
-                    step->note = clamp<int>(step->note + value, -4, STEP_NOTE_MAX);
+                    step->note = pnemInScale && step->note >= 0
+                                   ? pnem::transpose::step(step->note, value) // PNEM: in scale
+                                   : clamp<int>(step->note + value, -4, STEP_NOTE_MAX);
 
                     mtProject.values.lastUsedNote = step->note;
 
@@ -691,7 +697,8 @@ void Sequencer::changeSelectionNote(int16_t value, bool octaveShift)
             {
                 if (step->note >= 0)
                 {
-                    step->note = clamp<int>(step->note + value, 0, STEP_NOTE_MAX);
+                    step->note = pnemInScale ? pnem::transpose::step(step->note, value) // PNEM: in scale
+                                             : clamp<int>(step->note + value, 0, STEP_NOTE_MAX);
                     sometingWasChanged = true;
                 }
             }

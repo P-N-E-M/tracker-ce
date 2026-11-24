@@ -25,6 +25,7 @@
 
 #ifdef GUI_HANDLE_SYNTH
 #include "Synth.h"
+#include "pnemTranspose.h" // PNEM
 #endif
 
 #include <cr_section_macros.h>
@@ -532,6 +533,8 @@ uint8_t cProjectEditor::loadProjectValues()
         engine.refreshSynthInstrumentParams(mtProject.values.synthPart[part], part);
     }
 #endif
+
+    pnem::transpose::fromProject(); // PNEM: Transpose in scale: the menu from the project
 
     return 1;
 }
