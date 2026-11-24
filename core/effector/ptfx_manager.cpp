@@ -37,7 +37,7 @@ void PtfxManager::scanEffects(bool force)
     s_pluginCount = 0;
     memset(s_effectDisplayNames, 0, sizeof(s_effectDisplayNames));
 
-    // Initialize built-in effect names (0 .. 16)
+    // Initialize built-in effect names (0 .. 17)
     for (uint16_t i = 0; i < kBuiltInEffectsCount; i++)
     {
         s_effectDisplayNames[i] = effectNamesLabels[i];

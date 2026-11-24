@@ -9,9 +9,12 @@
 #include "mtSequencer.h"
 #include "sampleEditor/sampleEditor.h"
 #include "ptfx_manager.h"
+#include "mtEffectWavetableCycle.h"
 #include "util_math.h"
 
 #include <cr_section_macros.h>
+
+static_assert(kBuiltInEffectsCount == editorEffectModular, "PNEM CE: the built-in effects come before Modular");
 
 __NOINIT(EXTERNAL_RAM) strTrackerSpectrum cSampleEditor::spectrumData[2];
 __NOINIT(EXTERNAL_RAM) strEffectDisplayParams cSampleEditor::effectDisplayParamsToAdjust[editorEffectMax];
@@ -1433,6 +1436,25 @@ void cSampleEditor::modParameter(int16_t value, uint8_t idx)
     setPreviewFunction();
     currentEffect->clearProcessedData();
     refreshParameter(idx);
+    pnemFitWtCycle();
+}
+
+// PNEM CE: Window Num x Window Len must fit in the edit buffer's half; a longer Window Len lowers
+// Window Num on screen too
+void cSampleEditor::pnemFitWtCycle()
+{
+    if (currentEffectIdx != editorEffectWavetableCycle)
+    {
+        return;
+    }
+    float* params = effectDisplayParamsToAdjust[currentEffectIdx].parameter;
+    const float fit = (float)mtEffectWavetableCycle::maxWindows((int)(params[1] + 0.5f));
+    if (params[0] > fit)
+    {
+        params[0] = fit;
+        currentEffect->setParameter(params[0], 0);
+        refreshParameter(0);
+    }
 }
 
 void cSampleEditor::setDefaultParameter(uint8_t idx)
@@ -1456,6 +1478,7 @@ void cSampleEditor::setDefaultParameter(uint8_t idx)
     setPreviewFunction();
     currentEffect->clearProcessedData();
     refreshParameter(idx);
+    pnemFitWtCycle();
 }
 
 int cSampleEditor::getSelectedParameterIdx()
@@ -2309,6 +2332,10 @@ uint8_t cSampleEditor::getParameterListCount(uint8_t paramIdx) const
     {
         return s_modularListCounts[paramIdx];
     }
+    if (currentEffectIdx == editorEffectWavetableCycle && paramIdx < wavetableCycleParams::kParams) // PNEM CE
+    {
+        return wavetableCycleParams::listCount[paramIdx];
+    }
     return 0;
 }
 
@@ -2317,6 +2344,10 @@ char** cSampleEditor::getParameterListItems(uint8_t paramIdx) const
     if (currentEffectIdx == editorEffectModular && paramIdx < kMaxParametersInEffect)
     {
         return &s_modularListItems[paramIdx][0];
+    }
+    if (currentEffectIdx == editorEffectWavetableCycle && paramIdx < wavetableCycleParams::kParams) // PNEM CE
+    {
+        return (char**)wavetableCycleParams::listItems[paramIdx];
     }
     return nullptr;
 }

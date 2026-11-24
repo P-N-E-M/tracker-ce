@@ -17,6 +17,7 @@ enum enSampleEditorEffect
     editorEffectLimiter,
     editorEffectCompresor,
     editorEffectWavetableSmoother,
+    editorEffectWavetableCycle, // PNEM CE
     editorEffectTimestretchBeat,
     editorEffectTimestretchNote,
     editorEffectFadeIn,
@@ -158,6 +159,21 @@ extern float changeStep[2];
 extern float displayMult[2];
 extern const char* const afterValueText[2];
 extern const char displayType[2];
+}
+
+// PNEM CE: WT Cycle; Window Len is a list
+namespace wavetableCycleParams
+{
+constexpr int kParams = 3;
+extern const char* const labelText[kParams];
+extern float upConstrain[kParams];
+extern float downConstrain[kParams];
+extern float changeStep[kParams];
+extern float displayMult[kParams];
+extern const char* const afterValueText[kParams];
+extern const char displayType[kParams];
+extern const uint8_t listCount[kParams];
+extern const char* const* const listItems[kParams];
 }
 
 namespace normalizerParams

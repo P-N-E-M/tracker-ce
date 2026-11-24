@@ -15,9 +15,10 @@ char* const effectNamesLabels[editorEffectMax] = {
     (char*)"Bitcrusher",       (char*)"Chorus",
     (char*)"Flanger",          (char*)"Equalizer",
     (char*)"Limiter",          (char*)"Compressor",
-    (char*)"WT Smoother",      (char*)"Timestretch Beat",
-    (char*)"Timestretch Note", (char*)"Fade In",
-    (char*)"Fade Out",         (char*)"Modular"
+    (char*)"WT Smoother",      (char*)"WT Cycle",
+    (char*)"Timestretch Beat", (char*)"Timestretch Note",
+    (char*)"Fade In",          (char*)"Fade Out",
+    (char*)"Modular"
 };
 
 struct strEffectDisplayParams
@@ -133,6 +134,14 @@ const strEffectDisplayConstantParams effectDisplayConstantParams[editorEffectMax
       wavetableSmootherParams::displayMult,
       wavetableSmootherParams::afterValueText,
       wavetableSmootherParams::displayType },
+    { wavetableCycleParams::kParams, // PNEM CE: WT Cycle
+      wavetableCycleParams::labelText,
+      wavetableCycleParams::upConstrain,
+      wavetableCycleParams::downConstrain,
+      wavetableCycleParams::changeStep,
+      wavetableCycleParams::displayMult,
+      wavetableCycleParams::afterValueText,
+      wavetableCycleParams::displayType },
     { 4,
       timestretchBeatParams::labelText,
       timestretchBeatParams::upConstrain,
@@ -168,6 +177,7 @@ const strEffectDefaultParams effectDefaultParamsTable[editorEffectMax] = {
     { { -6.0f, 3.0f, 300.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },     // limiter
     { { -12.0f, 4.0f, 10.0f, 50.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },    // compressor
     { { 256.0f, 2048.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },   // wt smoother
+    { { 256.0f, 6.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },      // wt cycle (PNEM CE): 256 x 2048, Smooth 2
     { { 0.0f, 16.0f, 0.0f, 4.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },       // timestretch beat
     { { 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } },      // timestretch note
     {}, // fade in - brak drugiego ekranu
@@ -336,6 +346,7 @@ class cSampleEditor : public ModuleBase
     // ParameterScreen
     void modParameter(int16_t val, uint8_t n);
     void setDefaultParameter(uint8_t n);
+    void pnemFitWtCycle(); // PNEM CE: WT Cycle's Window Num at most what fits with its Window Len
     int getSelectedParameterIdx();
     int getParamsPagesCount();
     int getCurrentPageParams();
