@@ -953,6 +953,12 @@ class Sequencer
     uint8_t getActualPos() { return player.track[0].actual_pos; }
     uint8_t getPatternLength() { return getActualPattern()->track[0].length + 1; }
 
+    // PNEM: MIDI CC A-F as Performance columns: the instrument a track sent last
+    uint8_t pnemLastInstrument(uint8_t track) const
+    {
+        return track < kAllTracks ? player.track[track].stepSent.instrument : 0;
+    }
+
     void alignToGlobalPos(uint8_t);
 
     void setExternalClockComp(uint8_t configValue);

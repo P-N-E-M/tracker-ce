@@ -6,6 +6,7 @@
 #include "performanceFx.h"
 
 #include "performanceEngine.h"
+#include "perfMidiCc.h" // PNEM: MIDI CC A-F as Performance columns
 
 // INSTRUKCJA DODAWANIA FXa
 // 1. Dodaj odpowiednią pozycje enuma w odpowiednim jego miejscu
@@ -73,6 +74,12 @@ enum
     mtPerfSynth3Macro6,
 #endif
     mtPerfScene, // PNEM: Performance scenes (on the Plus 46, as on 1.2.0)
+    mtPerfMidiCcA, // PNEM: MIDI CC A-F as Performance columns (on the Plus 47-52)
+    mtPerfMidiCcB,
+    mtPerfMidiCcC,
+    mtPerfMidiCcD,
+    mtPerfMidiCcE,
+    mtPerfMidiCcF,
     //--- dodwac efekty powyzej /\ ---
     performanceFxesCount
 };
@@ -838,3 +845,46 @@ const char scenePerfLabels[4][5] = { "Off", "Sc 1", "Sc 2", "Sc 3" };
 const fxSetup sceneSetup = { 0, 3, &scenePerfLabels[0][0], 5, 0, 0, true };
 
 cPerformFx scenePerfFx(mtPerfScene, "Performance scene", sceneSet, sceneClear, &sceneSetup);
+
+//########## PNEM: MIDI CC A-F ####################################################################
+// The value of a pad is 1..128 for CC 0..127, so 0 stays "---" (off) as in every column. perfMidiCc
+// sends it to each affected track's MIDI instrument.
+struct MidiCcPerfLabels
+{
+    char text[129][4];
+    constexpr MidiCcPerfLabels()
+      : text{}
+    {
+        text[0][0] = text[0][1] = text[0][2] = '-';
+        for (int v = 0; v < 128; v++)
+        {
+            char* t = text[v + 1];
+            int i = 0;
+            if (v >= 100)
+                t[i++] = (char)('0' + v / 100);
+            if (v >= 10)
+                t[i++] = (char)('0' + v / 10 % 10);
+            t[i] = (char)('0' + v % 10);
+        }
+    }
+};
+constexpr MidiCcPerfLabels midiCcPerfLabels{};
+const fxSetup midiCcSetup = { 0, 128, &midiCcPerfLabels.text[0][0], 4 };
+
+template<uint8_t cc>
+void midiCcSet(uint8_t track, int16_t value)
+{
+    pnem::perfcc::set(track, cc, value);
+}
+template<uint8_t cc>
+void midiCcClear(uint8_t track)
+{
+    pnem::perfcc::clear(track, cc);
+}
+
+cPerformFx midiCcAPerfFx(mtPerfMidiCcA, "MIDI CC A", midiCcSet<0>, midiCcClear<0>, &midiCcSetup);
+cPerformFx midiCcBPerfFx(mtPerfMidiCcB, "MIDI CC B", midiCcSet<1>, midiCcClear<1>, &midiCcSetup);
+cPerformFx midiCcCPerfFx(mtPerfMidiCcC, "MIDI CC C", midiCcSet<2>, midiCcClear<2>, &midiCcSetup);
+cPerformFx midiCcDPerfFx(mtPerfMidiCcD, "MIDI CC D", midiCcSet<3>, midiCcClear<3>, &midiCcSetup);
+cPerformFx midiCcEPerfFx(mtPerfMidiCcE, "MIDI CC E", midiCcSet<4>, midiCcClear<4>, &midiCcSetup);
+cPerformFx midiCcFPerfFx(mtPerfMidiCcF, "MIDI CC F", midiCcSet<5>, midiCcClear<5>, &midiCcSetup);
