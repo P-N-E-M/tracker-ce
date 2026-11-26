@@ -97,6 +97,8 @@ void cFileManager::update()
 
         case fmDrawSampleWaveform: updateDrawSampleWaveform(); break;
 
+        case fmSaveInstrumentToFile: instrumentFileSave.update(); break; // PNEM CE
+
         default: break;
     }
 }
@@ -142,6 +144,7 @@ uint8_t cFileManager::getProgress()
             break;
         case fmSavingImportingRecordedSound:
         case fmSavingRecordedSound: return recordingSave.getProgress();
+        case fmSavingInstrumentToFile: return instrumentFileSave.getProgress() * 100; // PNEM CE
         default: return 100;
     }
 
@@ -373,6 +376,14 @@ bool cFileManager::importSampleFromSampleEditor(int16_t* memoryAddressL,
 
     return sampleMemorySave.saveSampleFromSampleEditor(
       memoryAddressL, memoryAddressR, samplesCount, instrumentIdx);
+}
+
+// PNEM CE: Save instrument
+bool cFileManager::saveInstrumentToFile(int idx, const char* path)
+{
+    stopAutosave();
+
+    return instrumentFileSave.start(idx, path);
 }
 
 bool cFileManager::reloadSamplesFromWorkspace()

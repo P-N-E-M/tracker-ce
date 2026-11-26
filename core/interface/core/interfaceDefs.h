@@ -253,6 +253,8 @@ const char fileManagerPopupText[][30] = {
     "Loading Samples",
 
     "Exporting Samples",
+
+    "Saving instrument", // PNEM CE
 };
 //-------------------------------------------------------------
 

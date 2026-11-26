@@ -10,6 +10,7 @@ enum FileBrowserMode
     kProjectBrowser,
     kModBrowser,
     kSamplesBrowser,
+    kInstrumentBrowser, // PNEM CE: folders, .pti and .wav (Sample Loader > Save instrument)
 
 };
 
@@ -68,6 +69,7 @@ class FileBrowser
 
   private:
     static constexpr char kWavFileExtension[] = "wav";
+    static constexpr char kInstrumentFileExtension[] = "pti";
     static constexpr char kModFileExtension1[] = "mod";
     static constexpr char kModFileExtension2[] = "it";
 

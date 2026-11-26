@@ -361,6 +361,7 @@ void Interface::commonThingsUpdate()
                 case fmExportingMod: text_index = 22; break;
                 case fmReloadingSamples: text_index = 23; break;
                 case fmBrowsingGames: text_index = 24; break;
+                case fmSavingInstrumentToFile: text_index = 25; break; // PNEM CE
                 default: text_index = 0; break;
             }
 
@@ -432,6 +433,7 @@ void Interface::processFileManagerPopupProgress(uint8_t status)
         case fmImportingSampleFromSampleEditor: break;
         case fmImportingMod: progress = newFileManager.importMod_getProgress(); break;
         case fmExportingMod: progress = newFileManager.exportItFile_getProgress(); break;
+        case fmSavingInstrumentToFile: progress = newFileManager.getProgress(); break; // PNEM CE
         default: break;
     }
 

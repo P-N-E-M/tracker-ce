@@ -36,7 +36,8 @@ void FileBrowser::refresh()
 
     int listNamesLen = listNamesOffset;
 
-    if (data->mode == kProjectBrowser || data->mode == kSamplesBrowser || data->mode == kModBrowser)
+    if (data->mode == kProjectBrowser || data->mode == kSamplesBrowser || data->mode == kModBrowser ||
+        data->mode == kInstrumentBrowser)
     {
         if (folderList != nullptr)
         {
@@ -87,7 +88,7 @@ void FileBrowser::refresh()
         assert(listNamesLen <= data->maxBrowserListLen);
     }
 
-    if (data->mode == kSamplesBrowser || data->mode == kModBrowser)
+    if (data->mode == kSamplesBrowser || data->mode == kModBrowser || data->mode == kInstrumentBrowser)
     {
         if (fileList != nullptr)
         {
@@ -106,6 +107,11 @@ void FileBrowser::refresh()
               if (data->mode == kSamplesBrowser)
               {
                   return checkFilenameExtension(name, kWavFileExtension);
+              }
+              if (data->mode == kInstrumentBrowser)
+              {
+                  return checkFilenameExtension(name, kInstrumentFileExtension) ||
+                         checkFilenameExtension(name, kWavFileExtension);
               }
               if (data->mode == kModBrowser)
               {

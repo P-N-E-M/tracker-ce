@@ -34,6 +34,8 @@ static void functPlayAction();
 static void functEnter();
 static void functRename();
 static void functDeleteUnused();
+static void functMore();
+static void functSaveInstrument();
 static void functShift(uint8_t state);
 
 static void functInstrumentAdd();
@@ -184,6 +186,10 @@ void cSampleImporter::update()
             stepDelete = false;
         }
     }
+    else if (managerStatus == fmSaveInstrumentEnd || managerStatus == fmSaveInstrumentError)
+    {
+        pnemSaveStatus(managerStatus); // PNEM CE: Save instrument
+    }
     else if (managerStatus >= fmError)
     {
         ip->unblockAllInputs();
@@ -326,6 +332,8 @@ void cSampleImporter::stop()
 
     stopPlayingAll();
 
+    pnemSaveCleanup(); // PNEM CE: Save instrument
+
     moduleRefresh = 0;
 }
 
@@ -361,7 +369,7 @@ void cSampleImporter::setDefaultScreenFunct()
     ip->setButtonObj(commonPreviewButton, functPreviewFile);      // 4
     ip->setButtonObj(interfaceButton3, buttonPress, functRename); // 2
     ip->setButtonObj(interfaceButton4, buttonPress, functInstrumentImport);
-    ip->setButtonObj(interfaceButton5, buttonPress, functDeleteUnused);
+    ip->setButtonObj(interfaceButton5, buttonPress, functMore); // PNEM CE: Delete unused is on More
     ip->setButtonObj(interfaceButton6, functSelectPreviewVolume);
     ip->setButtonObj(interfaceButton7, buttonPress, functMemoryModeOrToggle);
 
@@ -374,6 +382,14 @@ void cSampleImporter::setDefaultScreenFunct()
     ip->setButtonObj(interfaceButtonMiniMiddle, functMiniMiddle);
 
     ip->setPadsGlobal(functPads);
+
+    // PNEM CE: the second row (More): Delete unused, Save instrument
+    if (pnemMorePage)
+    {
+        ip->clearButtonsRange(interfaceButton0, interfaceButton4);
+        ip->setButtonObj(interfaceButton0, buttonPress, functDeleteUnused);
+        ip->setButtonObj(interfaceButton1, buttonPress, functSaveInstrument);
+    }
 }
 
 //==============================================================================================================
@@ -1027,6 +1043,20 @@ static void functDeleteUnused()
     SI->showInfoPopupDeleteInstrument();
 }
 
+// PNEM CE: More toggles between the two rows of buttons
+static void functMore()
+{
+    SI->stopPlayingAll();
+    SI->pnemMorePage = !SI->pnemMorePage;
+    SI->setDefaultScreenFunct();
+    SI->showDefaultScreen();
+}
+
+static void functSaveInstrument()
+{
+    SI->pnemSaveInstrument();
+}
+
 static void functAutoNameRename()
 {
     SI->keyboardManager.setRandomName();
@@ -1400,6 +1430,13 @@ void cSampleImporter::refreshGuiAfterDelay()
 
 void cSampleImporter::refreshActionButtons()
 {
+    if (pnemMorePage) // PNEM CE: the second row
+    {
+        pnemRow2Colors();
+        updateMemoryButtonLabel();
+        return;
+    }
+
     showAddOrEnter();
 
     renameColorControl();

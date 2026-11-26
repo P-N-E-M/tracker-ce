@@ -155,8 +155,8 @@ void cSampleImporter::showDefaultScreen()
     display.setControlText(label[2], "Preview");
     display.setControlText(label[3], "Rename");
     display.setControlText(label[4], "Import"); // Preview
-    display.setControlText(label[5], "Delete");
-    display.setControlText2(label[5], "unused");
+    display.setControlText(label[5], "More"); // PNEM CE: Delete unused, Save instrument on the 2nd row
+    display.setControlText2(label[5], "");
     display.setControlText(label[6], "Preview Vol");
     display.setControlText2(label[6], "");
 
@@ -171,7 +171,7 @@ void cSampleImporter::showDefaultScreen()
     display.setControlColors(label[2], display.getTheme().activeButtonLabelsColors);
     display.setControlColors(label[3], display.getTheme().activeButtonLabelsColors);
     display.setControlColors(label[4], display.getTheme().activeButtonLabelsColors);
-    display.setControlColors(label[5], display.getTheme().activeButtonLabelsColors);
+    display.setControlColors(label[5], display.getTheme().moreButtonColors);
     display.setControlColors(label[6], display.getTheme().activeLabelsColors);
     display.setControlColors(label[7], display.getTheme().activeButtonLabelsColors);
 
@@ -193,6 +193,8 @@ void cSampleImporter::showDefaultScreen()
     display.setControlValue(label[2], 0);
     display.setControlValue(label[3], 0);
     display.setControlValue(label[4], 0);
+
+    pnemShowRow(); // PNEM CE: More with its dots, and the second row when it's on
 
     updateMemoryButtonLabel();
 
@@ -556,14 +558,8 @@ void cSampleImporter::renameColorControl()
 
 void cSampleImporter::deleteUnusedColorControl()
 {
-    const uint32_t* colors = display.getTheme().inactiveButtonLabelsColors;
-
-    if (selectedPlace == 1)
-    {
-        colors = display.getTheme().activeButtonLabelsColors;
-    }
-
-    display.setControlColors(label[5], colors);
+    // PNEM CE: the button is More now (Delete unused is on its second row)
+    display.setControlColors(label[5], display.getTheme().moreButtonColors);
     display.refreshControl(label[5]);
 }
 
