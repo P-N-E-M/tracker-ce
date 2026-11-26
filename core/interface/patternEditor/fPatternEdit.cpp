@@ -3278,7 +3278,11 @@ static void functDeleteBackspace(uint8_t state)
                 }
                 else if (PTE->editParam == cPatternEditor::EditNote)
                 {
-                    sequencer.clearSelected(Sequencer::ELEMENTS_NOTES);
+                    // PNEM: Delete note: full row: on synth and MIDI steps too, as CE does on
+                    // sample steps (CE keeps their instrument, FX, volume and micro-move)
+                    sequencer.clearSelected(pnem::option(pnem::kDeleteNoteRow)
+                                              ? Sequencer::ELEMENTS_ALL_NO_PREFERENCES
+                                              : Sequencer::ELEMENTS_NOTES);
                 }
                 else
                 {

@@ -20,6 +20,7 @@ enum Option : uint8_t
     kTrackWrap,      // Left on track 1 goes to track 16, Right on track 16 to track 1
     kAlignMuteKeys,  // Shift + softkey mutes / arms the tracks on screen
     kNavigateWithinTrack, // the arrows between tracks go through the track's columns first
+    kDeleteNoteRow,  // Delete on the Note column clears the whole row, on synth and MIDI steps too
     kOptionCount
 };
 
