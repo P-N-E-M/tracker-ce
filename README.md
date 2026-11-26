@@ -74,6 +74,7 @@ as-is. Take whatever inspires you.
 - **Delete note: full row**: done, tested on a Tracker+.
 - **MIDI CC in Performance**: on `feature/perfmidicc`, being tested on a Tracker+.
 - **Transpose in scale**: done, tested on a Tracker+.
+- **WT Cycle**: done, tested on a Tracker+.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
@@ -308,6 +309,33 @@ list. The other play modes keep CE's buttons.
 - **Saved in the instrument:** the value travels with the project, a copied instrument and a
   `.pti` file. It sits in bytes the instrument file already had as padding, so CE loads
   these files as before and ignores it.
+
+### WT Cycle
+
+A new effect in the Sample Editor, right after CE's **WT Smoother** (which stays as it is). It turns
+a sample with a pitch into a wavetable for the Wavetable play mode: select the part you want, set
+**Window Num** (positions, 1-1024), **Window Len** (32-2048 samples, the play mode's Window) and
+**Smooth**, and apply.
+
+- **One cycle per position:** it finds the sample's pitch, measures the spectrum of single periods
+  of the tone, and builds each position as exactly one cycle of Window Len samples. A position's
+  end runs into its start, so the loop doesn't snarl.
+- **The whole selection:** the positions are spread from the start to the end of the selection,
+  however long it is. CE's WT Smoother only uses the first Window Num windows.
+- **Barely audible steps:** every harmonic has the same phase in every position, so neighbouring
+  positions differ only as much as the sound itself changes, not in the shape of the wave (a
+  sample's waveform shifts from period to period with vibrato, detune or chorus, even when it
+  sounds the same). Each position is averaged over the stretch of sample it stands for.
+- **Smooth** (0-16, default 2) averages each position over that many more positions on either
+  side: higher is smoother, lower keeps fast changes. Detuned or chorused sounds, whose beating
+  changes the spectrum quickly, gain the most from it.
+- **Up to 1024 positions**, as long as they fit in the Sample Editor's buffer: at Window Len 2048
+  that's 960, and a longer Window Len lowers Window Num to what fits. More positions don't cost
+  anything when playing; making the table takes a few seconds longer.
+- Set the same Window in Sample Playback's Wavetable mode as the Window Len you made it with.
+- **Best results:** one note with a steady pitch whose sound changes (a filter sweep, a vowel,
+  PWM), without the attack, the release or silence. Chords and big glides have no single period.
+  Window Len 1024 or 2048 keeps all the harmonics; 64 has room for only 31.
 
 ## Install
 

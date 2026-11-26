@@ -16,6 +16,7 @@
 #include "mtEffectReverse.h"
 #include "mtEffectTimestretch.h"
 #include "mtEffectWavetableSmoother.h"
+#include "mtEffectWavetableCycle.h"
 #include "mtEffectModular.h"
 
 mtEffect* sampleEditorEffect[editorEffectMax] = { &sampleEditorNormalizer,
@@ -31,6 +32,7 @@ mtEffect* sampleEditorEffect[editorEffectMax] = { &sampleEditorNormalizer,
                                                   &sampleEditorLimiter,
                                                   &sampleEditorCompresor,
                                                   &sampleEditorWavetableSmoother,
+                                                  &sampleEditorWavetableCycle,
                                                   &sampleEditorTimestretchBeat,
                                                   &sampleEditorTimestretchNote,
                                                   &sampleEditorFadeIn,
@@ -206,6 +208,25 @@ float changeStep[2] = { 1.0f, 1.0f };
 float displayMult[2] = { 1.0f, 1.0f };
 const char* const afterValueText[2] = { nullptr, nullptr };
 const char displayType[2] = { 'd', 'd' };
+}
+
+//******************************WT CYCLE (PNEM CE)
+
+namespace wavetableCycleParams
+{
+const char* const labelText[kParams] = { "Window Num", "Window Len", "Smooth" };
+float upConstrain[kParams] = { mtEffectWavetableCycle::kMaxWindows, mtEffectWavetableCycle::kLengthCount - 1,
+                               mtEffectWavetableCycle::kMaxSmooth };
+float downConstrain[kParams] = { 1.0f, 0.0f, 0.0f };
+float changeStep[kParams] = { 1.0f, 1.0f, 1.0f };
+float displayMult[kParams] = { 1.0f, 1.0f, 1.0f };
+const char* const afterValueText[kParams] = { nullptr, nullptr, nullptr };
+const char displayType[kParams] = { 'd', 'l', 'd' };
+
+static const char* const lengthItems[mtEffectWavetableCycle::kLengthCount] = { "32",  "64",   "128", "256",
+                                                                               "512", "1024", "2048" };
+const uint8_t listCount[kParams] = { 0, mtEffectWavetableCycle::kLengthCount, 0 };
+const char* const* const listItems[kParams] = { nullptr, lengthItems, nullptr };
 }
 
 namespace normalizerParams
