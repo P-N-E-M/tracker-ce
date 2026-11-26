@@ -6,6 +6,9 @@
 // and all its settings, in a folder the user picks on a screen like Save Project's (the folder's
 // .pti and .wav files shown too): Enter, New Folder, Cancel, Save, then the name on the keyboard. The
 // Sample Loader loads such a file back with all its settings, under that name.
+//
+// Build kit, next to it, does the same for a run of instruments selected in the list (Shift + Up or
+// Down): one Beat Slice instrument with a slice per instrument (see InstrumentFileSave.h).
 
 #include "sampleImporter/sampleImporter.h"
 
@@ -33,6 +36,9 @@ bool browsing = false;
 char lastPath[kMaxFilePathLen + 1] = ""; // the folder the last instrument went to ("": the root)
 char destPath[PATCH_SIZE];
 uint8_t saveSlot = 0;
+bool buildingKit = false; // Build kit rather than Save instrument
+uint8_t kitFirst = 0;
+uint8_t kitLast = 0;
 uint8_t placeBefore = 0;
 
 void noButton() {}
@@ -170,7 +176,7 @@ void showBrowser()
     mtPopups.hideInfoPopup();
 
     SI->titleBar->show();
-    SI->titleBar->setTitle("Sample Loader - Save Instrument");
+    SI->titleBar->setTitle(buildingKit ? "Sample Loader - Build Kit" : "Sample Loader - Save Instrument");
 
     display.setControlText(SI->explorerLabelControl, "SD Card");
     display.setControlShow(SI->explorerLabelControl);
@@ -325,13 +331,14 @@ void startSaving()
 {
     mtPopups.hideInfoPopup();
     polystrncpy(lastPath, browser.getCurrentPath(), sizeof(lastPath));
-    if (newFileManager.saveInstrumentToFile(saveSlot, destPath))
+    if (buildingKit ? newFileManager.saveKitToFile(kitFirst, kitLast, destPath)
+                    : newFileManager.saveInstrumentToFile(saveSlot, destPath))
     {
         SI->ip->blockAllInputs(); // until cSampleImporter::update sees the end
     }
     else
     {
-        mtPopups.show(1, "This instrument can't be saved here.");
+        mtPopups.show(1, buildingKit ? "This kit can't be built here." : "This instrument can't be saved here.");
         showBrowser();
     }
 }
@@ -389,7 +396,7 @@ void functSaveConfirm()
 void functBrowserSave()
 {
     char name[SAMPLE_NAME_SIZE + 1];
-    polystrncpy(name, mtProject.instrument[saveSlot].sample.file_name, sizeof(name));
+    polystrncpy(name, buildingKit ? "Kit" : mtProject.instrument[saveSlot].sample.file_name, sizeof(name));
     const int pos = browserData.browserListPosition;
     if (pos < browserData.browserListLength && !browser.isFolder(pos) &&
         !(pos == 0 && !browser.isRoot()) && hasFileExtension(browserData.browserList[pos], "pti"))
@@ -432,12 +439,14 @@ void cSampleImporter::pnemShowRow()
     display.setControlText2(label[0], "unused");
     display.setControlText(label[1], "Save");
     display.setControlText2(label[1], "instrument");
-    for (uint8_t i = 2; i < 5; i++)
+    display.setControlText(label[2], "Build");
+    display.setControlText2(label[2], "kit");
+    for (uint8_t i = 3; i < 5; i++)
     {
         display.setControlText(label[i], "");
         display.setControlText2(label[i], "");
     }
-    for (uint8_t i = 0; i < 2; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
         display.setControlValue(label[i], 1); // two lines
         display.setControlStyle2(label[i], controlStyleCenterX | controlStyleCenterY | controlStyleFont3);
@@ -455,10 +464,40 @@ void cSampleImporter::pnemRow2Colors()
                              selectedPlace == 1 && mtProject.instrument[selectedSlot].isActive == 1
                                ? active
                                : inactive);
+    display.setControlColors(label[2], pnemKitSelected() ? active : inactive);
     for (uint8_t i = 0; i < 5; i++)
     {
         display.refreshControl(label[i]);
     }
+}
+
+// Build kit: two or more instruments with a sample selected in the instrument list
+bool cSampleImporter::pnemKitSelected()
+{
+    if (selectedPlace != 1 || selectionLength[listInstruments] < 2)
+    {
+        return false;
+    }
+    uint8_t count = 0;
+    for (int i = getSelectionStart(listInstruments); i <= getSelectionEnd(listInstruments); i++)
+    {
+        if (i >= 0 && i < kSampleInstrumentsCount && mtProject.instrument[i].isActive)
+        {
+            count++;
+        }
+    }
+    return count >= 2;
+}
+
+void cSampleImporter::pnemBuildKit()
+{
+    if (!pnemKitSelected())
+    {
+        return;
+    }
+    kitFirst = getSelectionStart(listInstruments);
+    kitLast = getSelectionEnd(listInstruments);
+    openSaveBrowser(true);
 }
 
 void cSampleImporter::pnemSaveInstrument()
@@ -467,6 +506,12 @@ void cSampleImporter::pnemSaveInstrument()
     {
         return;
     }
+    openSaveBrowser(false);
+}
+
+void cSampleImporter::openSaveBrowser(bool kit)
+{
+    buildingKit = kit;
     stopPlayingAll();
     engine.getSdPlayer()->stop(); // the folder list goes in the scratch memory the SD preview uses
 
@@ -539,7 +584,7 @@ bool cSampleImporter::pnemSaveStatus(uint8_t status)
     pnemSaveStop();
     if (status == fmSaveInstrumentEnd)
     {
-        mtPopups.show(1, "Instrument saved.");
+        mtPopups.show(1, buildingKit ? "Kit saved." : "Instrument saved.");
         // The folder on the left may be the one it went to
         if (newFileManager.browseSdCard(nullptr))
         {
@@ -548,7 +593,7 @@ bool cSampleImporter::pnemSaveStatus(uint8_t status)
     }
     else
     {
-        mtPopups.show(1, "Saving the instrument failed.");
+        mtPopups.show(1, buildingKit ? "Building the kit failed." : "Saving the instrument failed.");
     }
     return true;
 }

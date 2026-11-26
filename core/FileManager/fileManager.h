@@ -296,6 +296,8 @@ class cFileManager
 
     // PNEM CE: Save instrument: the sample instrument as a .pti file at `path` (see InstrumentFileSave)
     bool saveInstrumentToFile(int idx, const char* path);
+    // PNEM CE: Build kit: the instruments first..last as one Beat Slice .pti at `path`
+    bool saveKitToFile(int first, int last, const char* path);
 
     bool drawSampleWaveform(int16_t file_index,
                             std::vector<int8_t*>& lower,

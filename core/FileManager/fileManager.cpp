@@ -386,6 +386,14 @@ bool cFileManager::saveInstrumentToFile(int idx, const char* path)
     return instrumentFileSave.start(idx, path);
 }
 
+// PNEM CE: Build kit
+bool cFileManager::saveKitToFile(int first, int last, const char* path)
+{
+    stopAutosave();
+
+    return instrumentFileSave.startKit(first, last, path);
+}
+
 bool cFileManager::reloadSamplesFromWorkspace()
 {
     stopAutosave();
