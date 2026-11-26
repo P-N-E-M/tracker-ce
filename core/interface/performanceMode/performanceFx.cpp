@@ -848,7 +848,8 @@ cPerformFx scenePerfFx(mtPerfScene, "Performance scene", sceneSet, sceneClear, &
 
 //########## PNEM: MIDI CC A-F ####################################################################
 // The value of a pad is 1..128 for CC 0..127, so 0 stays "---" (off) as in every column. perfMidiCc
-// sends it to each affected track's MIDI instrument.
+// sends it to each affected track's MIDI instrument. The top row has a value of its own too: what
+// the parameter goes back to when the column goes off ("---": nothing is sent, as before).
 struct MidiCcPerfLabels
 {
     char text[129][4];
@@ -869,7 +870,7 @@ struct MidiCcPerfLabels
     }
 };
 constexpr MidiCcPerfLabels midiCcPerfLabels{};
-const fxSetup midiCcSetup = { 0, 128, &midiCcPerfLabels.text[0][0], 4 };
+const fxSetup midiCcSetup = { 0, 128, &midiCcPerfLabels.text[0][0], 4, 0, 0, false, true };
 
 template<uint8_t cc>
 void midiCcSet(uint8_t track, int16_t value)
@@ -879,7 +880,7 @@ void midiCcSet(uint8_t track, int16_t value)
 template<uint8_t cc>
 void midiCcClear(uint8_t track)
 {
-    pnem::perfcc::clear(track, cc);
+    pnem::perfcc::clear(track, cc, performance.topRowValue(mtPerfMidiCcA + cc));
 }
 
 cPerformFx midiCcAPerfFx(mtPerfMidiCcA, "MIDI CC A", midiCcSet<0>, midiCcClear<0>, &midiCcSetup);

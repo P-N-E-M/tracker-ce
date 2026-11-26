@@ -17,6 +17,10 @@ struct fxSetup
     uint8_t blockedFx2 = 0;
 
     bool isGlobalFx = false;
+
+    // PNEM: the top row holds a value of its own (stored, editable in Rec) instead of always being
+    // off; selecting it still turns the effect off (clearFunct), which uses that value (MIDI CC A-F)
+    bool topRowIsValue = false;
 };
 
 class cPerformFx

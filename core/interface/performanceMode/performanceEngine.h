@@ -124,6 +124,12 @@ class cPerformEngine
     void scenePadPressed(uint8_t slot, uint8_t row); // after CE's own pad press
     void scenePadReleased(uint8_t slot);             // after CE's own pad release
     void otherPadPressed(uint8_t slot);              // a press on another column (Rec stores)
+
+    // PNEM: the top row's own value of the column with this type (fxSetup::topRowIsValue), 0 if
+    // none has that type
+    int16_t topRowValue(uint8_t fxId) const;
+    bool topRowIsValue(uint8_t slot) const;
+    bool fxTopRowIsValue(uint8_t fxId) const; // the type's top row has a value (kept on load)
     void sceneEditBegin();                           // Rec on: the scene playing is edited
     void sceneEditEnd();                             // Rec off
     uint8_t sceneEditNumber() const;                 // 1..3 while a scene is edited, else 0

@@ -72,18 +72,31 @@ void set(uint8_t track, uint8_t cc, int16_t value)
     AudioInterrupts();
 }
 
-void clear(uint8_t track, uint8_t cc)
+void clear(uint8_t track, uint8_t cc, int16_t rest)
 {
     if (track >= kPerformanceTracks || cc >= kCcs)
     {
         return;
     }
+    const uint8_t had = trackValue[track][cc];
     trackValue[track][cc] = 0;
     const uint8_t channel = midiChannel(sequencer.pnemLastInstrument(track));
-    if (channel != 0)
+    if (channel == 0)
     {
-        channelSent[channel - 1][cc] = 0;
+        return;
     }
+    // Back to the rest value, once per channel, only where the column had sent something
+    if (had != 0 && rest >= 1 && rest <= 128)
+    {
+        if (channelSent[channel - 1][cc] != rest)
+        {
+            AudioNoInterrupts();
+            send(channel, cc, (uint8_t)rest);
+            AudioInterrupts();
+        }
+        return;
+    }
+    channelSent[channel - 1][cc] = 0;
 }
 
 AUDIO_CORE_RAM void beforeMidiNote(uint8_t track, uint8_t instrument)
