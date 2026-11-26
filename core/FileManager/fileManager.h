@@ -13,6 +13,7 @@
 
 #include "InstrumentCopy.h"
 #include "InstrumentDelete.h"
+#include "InstrumentFileSave.h"
 #include "ProjectOpen.h"
 #include "ProjectSave.h"
 #include "RecordingSave.h"
@@ -62,6 +63,7 @@ enum fileManagerStatus
     fmImportingSampleFromSampleEditor,
     fmReloadingSamples,
     fmDrawingSampleWaveform,
+    fmSavingInstrumentToFile, // PNEM CE: Save instrument
 
     fmLoadEnd,
     fmSaveEnd,
@@ -78,6 +80,7 @@ enum fileManagerStatus
     fmImportSampleFromSampleEditorEnd,
     fmReloadSamplesEnd,
     fmDrawingSampleWaveformEnd,
+    fmSaveInstrumentEnd, // PNEM CE
 
     fmError,
     fmLoadError,
@@ -97,6 +100,7 @@ enum fileManagerStatus
     fmImportSampleFromSampleEditorError,
     fmReloadSamplesError,
     fmDrawingSampleWaveformError,
+    fmSaveInstrumentError, // PNEM CE
 
 };
 
@@ -133,6 +137,8 @@ enum fileManagerOperation
     fmReloadSamples,
 
     fmDrawSampleWaveform,
+
+    fmSaveInstrumentToFile, // PNEM CE
 };
 
 enum enImportModMode
@@ -287,6 +293,9 @@ class cFileManager
                                       uint8_t instrumentIdx);
 
     bool reloadSamplesFromWorkspace();
+
+    // PNEM CE: Save instrument: the sample instrument as a .pti file at `path` (see InstrumentFileSave)
+    bool saveInstrumentToFile(int idx, const char* path);
 
     bool drawSampleWaveform(int16_t file_index,
                             std::vector<int8_t*>& lower,
@@ -454,6 +463,7 @@ class cFileManager
     InstrumentDelete instrumentDelete;
     SampleMemoryReload sampleMemoryReload;
     SampleMemorySave sampleMemorySave;
+    InstrumentFileSave instrumentFileSave; // PNEM CE
     RecordingSave recordingSave;
     int currentPattern = -1; // -1 for asserts
     int loadedPattern = -1;  // -1 for asserts

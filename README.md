@@ -75,6 +75,7 @@ as-is. Take whatever inspires you.
 - **MIDI CC in Performance**: on `feature/perfmidicc`, being tested on a Tracker+.
 - **Transpose in scale**: done, tested on a Tracker+.
 - **WT Cycle**: done, tested on a Tracker+.
+- **Save instrument**: done, tested on a Tracker+.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
@@ -336,6 +337,24 @@ a sample with a pitch into a wavetable for the Wavetable play mode: select the p
 - **Best results:** one note with a steady pitch whose sound changes (a filter sweep, a vowel,
   PWM), without the attack, the release or silence. Chords and big glides have no single period.
   Window Len 1024 or 2048 keeps all the harmonics; 64 has room for only 31.
+
+### Save instrument
+
+The Sample Loader can save an instrument on its own, as a `.pti` file with its sample and all its
+settings (start and end points, loop, slices, filter, envelopes, LFOs, play mode, and so on), in a
+folder of your choice. Load it into any project with the Sample Loader, as before.
+
+- The button that said **Delete unused** now says **More**, with two dots as in Sample Playback's
+  Slice. It toggles a second row of buttons: **Delete unused** (as before) and **Save
+  instrument**. The lists work as usual on both rows, so you can pick another instrument.
+- Select the instrument in the list, then **Save instrument**. A screen like Save Project's shows
+  the SD card's folders and the instruments and samples in them: **Enter** opens a folder, **New
+  Folder** makes one, **Cancel** goes back, **Save** asks for the name: the instrument's, or that
+  of the instrument file selected in the list (to replace it).
+- The file carries the name you give it: loaded back, the instrument has that name. The
+  instrument in your project keeps its own.
+- A file with that name already there is replaced only after you confirm.
+- The next save starts in the folder of the last one.
 
 ## Install
 

@@ -15,6 +15,7 @@ enum
 };
 
 class Encoder;
+class FileSystem;
 
 class cSampleImporter : public ModuleBase
 {
@@ -358,6 +359,18 @@ class cSampleImporter : public ModuleBase
     uint8_t replaceSource = 0;
 
     bool addNextOperationWantReplaceInstrument;
+
+    // PNEM CE: More toggles a second row (Delete unused, Save instrument); Save instrument's screens
+    // (pnemSaveInstrument.cpp)
+    bool pnemMorePage = false; // the second row
+    strLabelData pnemLabelDataMore;
+    void pnemShowRow();        // the More label, and the second row's labels when it's on
+    void pnemRow2Colors();
+    void pnemSaveInstrument();
+    void pnemSaveStop();
+    void pnemSaveCleanup();
+    bool pnemSaveStatus(uint8_t status);
+    FileSystem* pnemFileSystem() { return platform->getFileSystem(); }
 };
 
 extern cSampleImporter sampleImporter;
