@@ -130,7 +130,7 @@ void cPerformEngine::loadSelectedValuesToTempValues()
 {
     for (uint8_t slot = 0; slot < 12; slot++)
     {
-        if (slotToRow[slot] > 0)
+        if (slotToRow[slot] > 0 || topRowIsValue(slot)) // PNEM: a top row with a value of its own
         {
             slotsTempValues[slot] = *(slotRowToValue + (slot * 4) + slotToRow[slot]);
         }
@@ -139,6 +139,30 @@ void cPerformEngine::loadSelectedValuesToTempValues()
             slotsTempValues[slot] = 0;
         }
     }
+}
+
+// PNEM: a top row with a value of its own (MIDI CC A-F: what "---" goes back to)
+bool cPerformEngine::topRowIsValue(uint8_t slot) const
+{
+    return slot < 12 && slotToFx[slot] != 0 && slotToFx[slot] < fxCount &&
+           fxList[slotToFx[slot]]->setup->topRowIsValue;
+}
+
+bool cPerformEngine::fxTopRowIsValue(uint8_t fxId) const
+{
+    return fxId != 0 && fxId < fxCount && fxList[fxId]->setup->topRowIsValue;
+}
+
+int16_t cPerformEngine::topRowValue(uint8_t fxId) const
+{
+    for (uint8_t slot = 0; slot < 12; slot++)
+    {
+        if (slotToFx[slot] == fxId && topRowIsValue(slot))
+        {
+            return *(slotRowToValue + (slot * 4));
+        }
+    }
+    return 0;
 }
 
 void cPerformEngine::toggleTrackState(uint8_t track)
@@ -377,7 +401,8 @@ void cPerformEngine::loadSlotFxValues(uint8_t slot)
 
     if (slotToRow[slot] == 0)
     {
-        slotsTempValues[slot] = 0;
+        // PNEM: a top row with a value of its own shows it (and the encoder starts from it)
+        slotsTempValues[slot] = topRowIsValue(slot) ? *(slotRowToValue + (slot * 4)) : 0;
         resetSlotFx(slot);
         return;
     }
@@ -515,7 +540,8 @@ void cPerformEngine::changeSlotFxValue(uint8_t slot, int16_t value)
     else
         slotsTempValues[slot] += value;
 
-    if (editState && slotToRow[slot] > 0) // zapis jesli edit mode, tylko jesli nie pierwszy wiersz
+    // PNEM: also the top row when it has a value of its own
+    if (editState && (slotToRow[slot] > 0 || topRowIsValue(slot))) // zapis jesli edit mode, tylko jesli nie pierwszy wiersz
     {
         *(slotRowToValue + (slot * 4) + slotToRow[slot]) = slotsTempValues[slot];
         if (sourceDataSaveFunct != nullptr)

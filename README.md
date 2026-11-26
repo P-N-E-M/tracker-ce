@@ -72,7 +72,7 @@ as-is. Take whatever inspires you.
 - **Align mute keys**: done, tested on a Tracker+.
 - **Navigate within track**: done, tested on a Tracker+.
 - **Delete note: full row**: done, tested on a Tracker+.
-- **MIDI CC in Performance**: on `feature/perfmidicc`, being tested on a Tracker+.
+- **MIDI CC in Performance**: done, tested on a Tracker+.
 - **Transpose in scale**: done, tested on a Tracker+.
 - **WT Cycle**: done, tested on a Tracker+.
 - **Save instrument**: done, tested on a Tracker+.
@@ -239,8 +239,12 @@ pads into three **scenes**. A scene stores a position for every other column: it
 Six Performance column types, **MIDI CC A** to **MIDI CC F** (after Performance scene), control an
 external MIDI instrument from Performance mode, for example a synth's cutoff or resonance.
 
-- **The pads:** the top pad is **---** and sends nothing; the three below hold a value from 0 to
-  127, set in Rec with the encoder, as for any column.
+- **The pads:** the three pads below the top one hold a value from 0 to 127, set in Rec with the
+  encoder, as for any column.
+- **The top pad is the rest value:** the value the parameter goes back to when the column goes
+  off, so when you press the top pad, leave Performance mode or take a track out of it. Set it in
+  Rec like the others, to the value the synth's knob is at (the Tracker can't read the synth).
+  It starts as **---**, which sends nothing: the synth then keeps the last value it got.
 - **Where it goes:** to the MIDI instrument each affected track played last, as the CC that
   instrument's channel has for CC A-F in the Instrument parameters (the same setting the Send CC
   step FX uses). Set to Program Change or channel aftertouch, that goes out instead; poly
@@ -249,9 +253,6 @@ external MIDI instrument from Performance mode, for example a synth's cutoff or 
   the same channel send it once.
 - Holding a pad and turning the encoder sends the values as you turn, and the pad's own value
   again when you let go, as with the other columns.
-- **---** can't put the synth back to its own setting, as the Tracker doesn't know it: the synth
-  keeps the last value it got until you turn its knob. Put a "home" value on one of the pads if
-  you want one.
 - The Tracker's own synths aren't affected: their macros have Performance columns of their own.
 - Performance Scenes and the columns' MIDI CC control work with these columns as with any other.
 

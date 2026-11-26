@@ -441,7 +441,10 @@ uint8_t cProjectEditor::loadProjectValues()
 
         // if(mtProject.values.perfFxValues[place][0] > 255 ||
         // mtProject.values.perfFxValues[place][0] < -255)
-        if (mtProject.values.perfFxValues[i][0] != 0)
+        // PNEM: a top row with a value of its own (MIDI CC A-F: the rest value) keeps it
+        if (mtProject.values.perfFxValues[i][0] != 0 &&
+            !(performance.fxTopRowIsValue(mtProject.values.perfFxPlaces[i]) &&
+              mtProject.values.perfFxValues[i][0] > 0 && mtProject.values.perfFxValues[i][0] <= 255))
             mtProject.values.perfFxValues[i][0] = 0;
         if (mtProject.values.perfFxValues[i][1] > 255 || mtProject.values.perfFxValues[i][1] < -255)
             mtProject.values.perfFxValues[i][1] = 0;

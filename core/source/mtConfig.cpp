@@ -370,7 +370,10 @@ void checkConfig()
         if (mtConfig.values.perfFxPlaces[i] == performanceSceneFxId)
             continue;
 
-        if (mtConfig.values.perfFxValues[i][0] != 0)
+        // PNEM: a top row with a value of its own (MIDI CC A-F: the rest value) keeps it
+        if (mtConfig.values.perfFxValues[i][0] != 0 &&
+            !(performance.fxTopRowIsValue(mtConfig.values.perfFxPlaces[i]) &&
+              mtConfig.values.perfFxValues[i][0] > 0 && mtConfig.values.perfFxValues[i][0] <= 255))
             mtConfig.values.perfFxValues[i][0] = 0;
         if (mtConfig.values.perfFxValues[i][1] > 255 || mtConfig.values.perfFxValues[i][1] < -255)
             mtConfig.values.perfFxValues[i][1] = 0;
