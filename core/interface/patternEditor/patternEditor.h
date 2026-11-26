@@ -358,6 +358,8 @@ class cPatternEditor : public ModuleBase
     // PNEM: Align mute keys (Config > General): the track a softkey mutes or arms with Shift. On:
     // the tracks on screen, the last one on the last key; off: 1-8, or 9-16 on a MIDI track (CE).
     int pnemSoftkeyTrack(uint8_t button, bool midiTracks);
+    bool pnemNavigateWithinTrack(bool right);
+    void pnemSetEditParam(uint8_t param);
 
     //--------------------------------------------------------
     // powiekszona funkcjolanosc przyciskow pod ekranem - 2 strony
