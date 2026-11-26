@@ -36,6 +36,7 @@ static void functRename();
 static void functDeleteUnused();
 static void functMore();
 static void functSaveInstrument();
+static void functBuildKit();
 static void functShift(uint8_t state);
 
 static void functInstrumentAdd();
@@ -389,6 +390,7 @@ void cSampleImporter::setDefaultScreenFunct()
         ip->clearButtonsRange(interfaceButton0, interfaceButton4);
         ip->setButtonObj(interfaceButton0, buttonPress, functDeleteUnused);
         ip->setButtonObj(interfaceButton1, buttonPress, functSaveInstrument);
+        ip->setButtonObj(interfaceButton2, buttonPress, functBuildKit);
     }
 }
 
@@ -1055,6 +1057,11 @@ static void functMore()
 static void functSaveInstrument()
 {
     SI->pnemSaveInstrument();
+}
+
+static void functBuildKit()
+{
+    SI->pnemBuildKit();
 }
 
 static void functAutoNameRename()

@@ -367,6 +367,9 @@ class cSampleImporter : public ModuleBase
     void pnemShowRow();        // the More label, and the second row's labels when it's on
     void pnemRow2Colors();
     void pnemSaveInstrument();
+    void pnemBuildKit();
+    bool pnemKitSelected();
+    void openSaveBrowser(bool kit); // Save instrument or Build kit
     void pnemSaveStop();
     void pnemSaveCleanup();
     bool pnemSaveStatus(uint8_t status);

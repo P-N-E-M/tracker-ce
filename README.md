@@ -76,6 +76,7 @@ as-is. Take whatever inspires you.
 - **Transpose in scale**: done, tested on a Tracker+.
 - **WT Cycle**: done, tested on a Tracker+.
 - **Save instrument**: done, tested on a Tracker+.
+- **Build kit**: done, tested on a Tracker+.
 - More of the same kind will follow.
 
 Only the Tracker+ is tested. The Original Tracker and Tracker Mini builds compile, but the
@@ -356,6 +357,23 @@ folder of your choice. Load it into any project with the Sample Loader, as befor
   instrument in your project keeps its own.
 - A file with that name already there is replaced only after you confirm.
 - The next save starts in the folder of the last one.
+
+### Build kit
+
+Next to **Save instrument** on the Sample Loader's second row: **Build kit** turns a run of
+instruments into one **Beat Slice** instrument, with a slice for each: a drum kit on the pads in
+one go.
+
+- Select the instruments in the list with **Shift + Up/Down** (a run of slots; copy and paste
+  instruments first to bring the ones you want together), then **Build kit**. It's active with
+  two or more instruments with a sample in the selection; empty slots in it are left out.
+- The same screen as Save instrument picks the folder and the name (**Kit** to start with); the
+  kit is saved as a `.pti` file, which you load like any other instrument.
+- Each instrument goes in from its start point to its end point, in the order of the list, with a
+  few milliseconds of silence between them, where the slice points sit: a slice never starts in
+  the tail of the one before. Stereo if any of them is.
+- The kit has the default instrument settings in Beat Slice mode: the instruments' own volume,
+  tune or filter don't come along. Up to 48 slices.
 
 ## Install
 
