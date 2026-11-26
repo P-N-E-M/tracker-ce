@@ -905,6 +905,8 @@ struct strMtValues
     uint8_t delayParams; // 7 - PINGPONG ENABLE , 6 - SYNC ENABLE, 5-0 SYNC RATE
 
     uint16_t limiterAttack = 100;
+    // PNEM: Transpose in scale (pnemTranspose.h), in what was padding: 'I', 'S' is In scale
+    uint8_t pnemTransposeTag[2] = {};
     float limiterRelease = 0.512;
     uint16_t limiterThreshold = 16384;
 
@@ -1012,6 +1014,8 @@ struct strMtValues
     uint8_t recorderGainUsb;
     void setDefaultTrackName(int trackIdx);
 };
+static_assert(offsetof(strMtValues, pnemTransposeTag) == 18 && offsetof(strMtValues, limiterRelease) == 20,
+              "PNEM: pnemTransposeTag must stay in the padding");
 
 //----------------------------------------------------------------------------------
 struct strSong
